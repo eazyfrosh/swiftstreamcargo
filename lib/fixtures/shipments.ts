@@ -35,7 +35,7 @@ import type { Shipment } from '../tracking';
  *   pieces: 6,
  *   weight: '1,240 lb / 562 kg',
  *   dimensions: '48 × 40 × 52 in',
- *   carrier: 'FreightBridge Linehaul 214',
+ *   carrier: 'Swiftstream Linehaul 214',
  *   events: [
  *     {
  *       stage: 'Order Confirmed',

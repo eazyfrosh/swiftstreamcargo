@@ -3,17 +3,18 @@ import Link from 'next/link';
 import { FOOTER_COLUMNS, SITE, WHATSAPP_URL } from '@/lib/site';
 import { WhatsAppIcon } from './icons/WhatsApp';
 import { Logo } from './ui/Logo';
+import type { WebsiteConfig } from '@/lib/operations';
 
 // WhatsApp goes first: it is a way to reach a person, not a feed to follow,
 // and it is the one in this row a customer with a problem actually wants.
 const SOCIALS = [
-  { label: 'Message FreightBridge Logistics on WhatsApp', href: WHATSAPP_URL, icon: WhatsAppIcon },
-  { label: 'FreightBridge Logistics on LinkedIn', href: 'https://www.linkedin.com', icon: Linkedin },
-  { label: 'FreightBridge Logistics on X', href: 'https://x.com', icon: Twitter },
-  { label: 'FreightBridge Logistics on YouTube', href: 'https://www.youtube.com', icon: Youtube },
+  { label: 'Message Swiftstream Cargo on WhatsApp', href: WHATSAPP_URL, icon: WhatsAppIcon },
+  { label: 'Swiftstream Cargo on LinkedIn', href: 'https://www.linkedin.com', icon: Linkedin },
+  { label: 'Swiftstream Cargo on X', href: 'https://x.com', icon: Twitter },
+  { label: 'Swiftstream Cargo on YouTube', href: 'https://www.youtube.com', icon: Youtube },
 ];
 
-export function Footer() {
+export function Footer({ config }: { config: WebsiteConfig }) {
   return (
     <footer className="on-dark relative overflow-hidden bg-navy-900 text-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -28,30 +29,30 @@ export function Footer() {
         <div className="grid gap-12 py-16 lg:grid-cols-[1.35fr_2.65fr] lg:gap-16 lg:py-20">
           {/* Brand */}
           <div>
-            <Logo tone="light" />
+            <Logo tone="light" name={config.name} />
             <p className="mt-5 max-w-sm text-[0.95rem] leading-relaxed text-white">
-              FreightBridge Logistics is a modern freight transportation company helping businesses move shipments
+              Swiftstream Cargo is a modern freight transportation company helping businesses move shipments
               efficiently across cities, states, and international destinations.
             </p>
 
             <ul className="mt-7 space-y-3 text-sm">
               <li className="flex items-start gap-2.5">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-white" aria-hidden="true" />
-                <span className="text-white/75">{SITE.address}</span>
+                <span className="text-white/75">{config.address}</span>
               </li>
               <li className="flex items-center gap-2.5">
                 <Phone className="h-4 w-4 shrink-0 text-white" aria-hidden="true" />
                 <a
-                  href={`tel:${SITE.phone.replace(/[^+\d]/g, '')}`}
+                  href={`tel:${config.phone.replace(/[^+\d]/g, '')}`}
                   className="text-white/75 transition-colors hover:text-white"
                 >
-                  {SITE.phone}
+                  {config.phone}
                 </a>
               </li>
               <li className="flex items-center gap-2.5">
                 <Mail className="h-4 w-4 shrink-0 text-white" aria-hidden="true" />
-                <a href={`mailto:${SITE.email}`} className="text-white/75 transition-colors hover:text-white">
-                  {SITE.email}
+                <a href={`mailto:${config.email}`} className="text-white/75 transition-colors hover:text-white">
+                  {config.email}
                 </a>
               </li>
             </ul>
@@ -83,10 +84,10 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="flex flex-col items-start justify-between gap-6 border-t border-white/25 py-7 sm:flex-row sm:items-center">
-          <p className="text-sm text-white/70">© 2023 FreightBridge Logistics. All rights reserved.</p>
+          <p className="text-sm text-white/70">© {new Date().getFullYear()} {config.name}. All rights reserved.</p>
 
           <div className="flex items-center gap-4">
-            <p className="hidden text-sm text-white/70 sm:block">{SITE.tagline}</p>
+            <p className="hidden text-sm text-white/70 sm:block">{config.tagline}</p>
             <ul className="flex gap-2">
               {SOCIALS.map((social) => (
                 <li key={social.label}>

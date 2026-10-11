@@ -17,7 +17,7 @@ export default function AdminLoginPage() {
           <LogoMark />
           <span>
             <span className="block font-display text-[1.1rem] font-semibold leading-tight tracking-[-0.03em] text-white">
-              FreightBridge Logistics
+              Swiftstream Cargo
             </span>
             <span className="block text-[0.7rem] font-semibold uppercase tracking-[0.12em] text-ink-400">
               Operations
@@ -27,7 +27,7 @@ export default function AdminLoginPage() {
 
         <h1 className="mt-8 font-display text-3xl font-semibold tracking-[-0.03em] text-white">Sign in</h1>
         <p className="mt-2 text-[0.95rem] text-ink-400">
-          This area is for FreightBridge Logistics staff. Customer tracking is on the public site.
+          This area is for Swiftstream Cargo staff. Customer tracking is on the public site.
         </p>
 
         <Suspense fallback={null}>
@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
             href="/"
             className="underline decoration-ink-600 underline-offset-4 transition-colors hover:text-ink-300"
           >
-            Back to freightbridge.com
+            Back to swiftstreamcargo.com
           </Link>
         </p>
       </div>

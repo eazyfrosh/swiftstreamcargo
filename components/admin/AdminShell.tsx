@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutDashboard, LogOut, Mail, Menu, MessageCircle, PackagePlus, Truck, X } from 'lucide-react';
+import { ClipboardList, FileClock, LayoutDashboard, LogOut, Mail, Menu, MessageCircle, PackagePlus, Settings, Truck, X } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -14,6 +14,9 @@ const NAV = [
   { href: '/admin/chat', label: 'Live chat', icon: MessageCircle, exact: false },
   { href: '/admin/book', label: 'Book shipment', icon: PackagePlus, exact: false },
   { href: '/admin/templates', label: 'Email templates', icon: Mail, exact: false },
+  { href: '/admin/enquiries', label: 'Enquiries', icon: ClipboardList, exact: false },
+  { href: '/admin/settings', label: 'Website settings', icon: Settings, exact: false },
+  { href: '/admin/audit-log', label: 'Audit log', icon: FileClock, exact: false },
 ];
 
 interface AdminShellProps {
@@ -60,9 +63,9 @@ export function AdminShell({ email, children }: AdminShellProps) {
         <span className="min-w-0">
           {/* 0.85rem, not 0.98: at the larger size the name overflowed the
               162px left after the mark and the rail's padding, and truncated
-              to "FreightBridge Logi…". */}
+              to "Swiftstream Logi…". */}
           <span className="block truncate font-display text-[0.85rem] font-semibold leading-tight tracking-[-0.03em] text-white">
-            FreightBridge Logistics
+            Swiftstream Cargo
           </span>
           <span className="block text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-ink-400">
             Operations
@@ -156,7 +159,7 @@ export function AdminShell({ email, children }: AdminShellProps) {
             <Menu className="h-5 w-5" aria-hidden="true" />
           </button>
           <span className="truncate font-display text-[1rem] font-semibold text-ink-900">
-            FreightBridge Logistics
+            Swiftstream Cargo
           </span>
         </header>
 

@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     // Preview deployments should not send production owner notifications.
     if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') return response(200, true);
     if (!key || !to || !from) return response(503, false);
-    const site = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.freightbridgelogistics.app');
+    const site = new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.swiftstreamcargo.com');
     const origin = request.headers.get('origin');
     const allowed = new Set([site.origin]);
     const alias = new URL(site);

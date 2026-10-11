@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  distDir: 'build-next',
+  outputFileTracingRoot: process.cwd(),
+  turbopack: { root: process.cwd() },
   reactStrictMode: true,
   poweredByHeader: false,
   /**

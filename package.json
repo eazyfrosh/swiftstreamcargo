@@ -1,8 +1,8 @@
 {
-  "name": "freightbridge",
+  "name": "swiftstream-cargo",
   "version": "1.0.0",
   "private": true,
-  "description": "FreightBridge — modern freight & logistics website",
+  "description": "Swiftstream Cargo — modern freight and logistics website",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,7 +14,7 @@
     "seed:emulator": "FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 node scripts/seed-firestore.mjs",
     "reset": "node scripts/reset-data.mjs",
     "reset:emulator": "FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 node scripts/reset-data.mjs",
-    "emulators": "firebase emulators:start --project demo-freightbridge",
+    "emulators": "firebase emulators:start --project demo-swiftstream-cargo",
     "doctor": "node scripts/doctor.mjs"
   },
   "dependencies": {

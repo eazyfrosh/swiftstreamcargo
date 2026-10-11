@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { AddEventForm } from '@/components/admin/AddEventForm';
 import { NotifyPanel } from '@/components/admin/NotifyPanel';
 import { ShipmentEditor } from '@/components/admin/ShipmentEditor';
+import { ArchiveShipmentButton } from '@/components/admin/ArchiveShipmentButton';
 import { adminStatusTone } from '@/lib/admin';
 import { CarrierLogo } from '@/components/CarrierLogo';
 import { carrierLogos } from '@/lib/carrier-logos';
@@ -84,6 +85,7 @@ export default async function AdminShipmentDetailPage({ params }: PageProps) {
         </span>
       </div>
       <p className="mt-1.5 text-[0.95rem] text-ink-500">{shipment.service}</p>
+      <div className="mt-4"><ArchiveShipmentButton trackingNumber={shipment.trackingNumber} /></div>
 
       <AddEventForm
         trackingNumber={shipment.trackingNumber}
@@ -166,9 +168,16 @@ export default async function AdminShipmentDetailPage({ params }: PageProps) {
         </section>
       )}
 
+      {shipment.sender && (
+        <section className="mt-8 rounded-2xl border border-ink-200 bg-surface p-5 sm:p-6">
+          <h2 className="font-display text-lg font-semibold text-ink-900">Sender</h2>
+          <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><div><dt className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-500">Contact</dt><dd className="mt-1 text-[0.95rem] font-medium text-ink-900">{shipment.sender.name}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-500">Company</dt><dd className="mt-1 text-[0.95rem] text-ink-900">{shipment.sender.company || '—'}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-500">Email</dt><dd className="mt-1 text-[0.95rem] text-ink-900">{shipment.sender.email}</dd></div><div><dt className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-500">Phone</dt><dd className="mt-1 text-[0.95rem] text-ink-900">{shipment.sender.phone}</dd></div></dl>
+        </section>
+      )}
+
       {shipment.customer && (
         <section className="mt-8 rounded-2xl border border-ink-200 bg-surface p-5 sm:p-6">
-          <h2 className="font-display text-lg font-semibold text-ink-900">Customer</h2>
+          <h2 className="font-display text-lg font-semibold text-ink-900">Recipient</h2>
           <dl className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-500">Contact</dt>

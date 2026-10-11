@@ -17,8 +17,8 @@ const BENEFITS = [
     copy: 'Move shipments efficiently with optimized logistics.',
     detail:
       'Lane-level routing and consolidated linehauls cut idle time between scans, so freight spends its hours moving instead of waiting on a dock.',
-    metric: '2.4 days',
-    metricLabel: 'Average domestic transit',
+    metric: 'Planned',
+    metricLabel: 'Route and timing',
     icon: Gauge,
   },
   {
@@ -26,9 +26,9 @@ const BENEFITS = [
     title: 'Visibility',
     copy: 'Know where your freight is at every step.',
     detail:
-      'Every pickup, transfer, and delivery scan lands in one live timeline — shared with your team and your customers automatically.',
-    metric: '24/7',
-    metricLabel: 'Live shipment tracking',
+      'Each pickup, transfer, and delivery event recorded by operations appears in one customer-safe timeline.',
+    metric: 'Recorded',
+    metricLabel: 'Database milestones',
     icon: Eye,
   },
   {
@@ -36,9 +36,9 @@ const BENEFITS = [
     title: 'Reliability',
     copy: 'Consistent transportation you can depend on.',
     detail:
-      'A vetted carrier network with performance scoring on every lane, plus proactive exception handling before a delay reaches your customer.',
-    metric: '98%',
-    metricLabel: 'On-time delivery',
+      'A clear On Hold state and timestamped notes give operators a consistent way to record and resolve exceptions.',
+    metric: 'Owned',
+    metricLabel: 'Exception handling',
     icon: ShieldCheck,
   },
   {
@@ -47,13 +47,13 @@ const BENEFITS = [
     copy: 'Modern tools that make logistics simpler.',
     detail:
       'Quoting, booking, documents, and reporting in one connected view — with an API when you would rather it lived inside your own systems.',
-    metric: '1 view',
-    metricLabel: 'Quotes, docs & tracking',
+    metric: 'Connected',
+    metricLabel: 'Quotes, docs and tracking',
     icon: Cpu,
   },
 ];
 
-export function WhyFreightBridge() {
+export function WhySwiftstream() {
   const [active, setActive] = useState(BENEFITS[0].id);
   const reduced = useReducedMotion();
 
@@ -71,7 +71,7 @@ export function WhyFreightBridge() {
             <Reveal from="left">
               <span className="eyebrow">
                 <span className="h-1.5 w-1.5 rounded-full bg-brand-500" aria-hidden="true" />
-                Why FreightBridge Logistics
+                Why Swiftstream Cargo
               </span>
             </Reveal>
             <Reveal delay={0.06} from="left">
@@ -81,7 +81,7 @@ export function WhyFreightBridge() {
             </Reveal>
             <Reveal delay={0.12} from="left">
               <p className="lead mt-5 max-w-md">
-                Supply chains stopped being predictable a long time ago. FreightBridge Logistics is designed for the version of
+                Supply chains stopped being predictable a long time ago. Swiftstream Cargo is designed for the version of
                 logistics you actually work in — fast, visible, and accountable at every handoff.
               </p>
             </Reveal>

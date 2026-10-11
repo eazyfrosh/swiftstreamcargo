@@ -5,27 +5,19 @@ import { TrackingWidget } from '@/components/TrackingWidget';
 import { Button } from '@/components/ui/Button';
 import { StaggerGroup, RevealItem } from '@/components/ui/Reveal';
 import { SectionHeading } from '@/components/ui/SectionHeading';
-import { CarrierLogo } from '@/components/CarrierLogo';
-import { carrierLogos } from '@/lib/carrier-logos';
-import { supportedCarriers } from '@/lib/multi-tracking';
 
 export const metadata: Metadata = {
   title: 'Track a Shipment',
   description:
-    'Track your FreightBridge Logistics shipment in real time. Enter your tracking number for live status, current location, timeline, and estimated delivery.',
+    'Track your Swiftstream Cargo shipment in real time. Enter your tracking number for live status, current location, timeline, and estimated delivery.',
   alternates: { canonical: '/tracking' },
 };
 
 const STATUS_GUIDE = [
   {
     icon: Hourglass,
-    title: 'Pending',
-    body: 'The booking is with us and waiting to be accepted — on a rate, on capacity, or on your go-ahead.',
-  },
-  {
-    icon: PackageSearch,
-    title: 'Order Confirmed',
-    body: 'Your booking is accepted and a pickup window has been scheduled with the origin terminal.',
+    title: 'Shipment Created',
+    body: 'The shipment record has been created and its pickup details are being prepared.',
   },
   {
     icon: Truck,
@@ -39,8 +31,8 @@ const STATUS_GUIDE = [
   },
   {
     icon: FileCheck2,
-    title: 'Customs Clearance',
-    body: 'Cross-border freight only. Entry documents are lodged and the shipment waits on release before the final leg.',
+    title: 'Arrived at Facility',
+    body: 'The shipment has reached a sorting or transfer facility and is waiting for its next movement.',
   },
   {
     icon: Clock4,
@@ -52,6 +44,11 @@ const STATUS_GUIDE = [
     title: 'Delivered',
     body: 'Proof of delivery — signature or photo — is captured and attached to the shipment record.',
   },
+  {
+    icon: Hourglass,
+    title: 'On Hold',
+    body: 'Movement is temporarily paused. The most recent database event explains the recorded reason.',
+  },
 ];
 
 interface TrackingPageProps {
@@ -61,8 +58,6 @@ interface TrackingPageProps {
 export default async function TrackingPage({ searchParams }: TrackingPageProps) {
   const params = await searchParams;
   const initialQuery = typeof params.number === 'string' ? params.number.slice(0, 32) : '';
-  const logos = carrierLogos();
-
   return (
     <>
       <PageHero
@@ -74,12 +69,12 @@ export default async function TrackingPage({ searchParams }: TrackingPageProps) 
             Know exactly where <span className="text-gradient">your freight is.</span>
           </>
         }
-        description="Every pickup, transfer, and delivery scan lands in one live timeline — no phone calls, no chasing carriers."
+        description="Every Swiftstream Cargo pickup, transfer, and delivery scan lands in one clear timeline."
       />
 
       <section className="relative z-10 -mt-24 sm:-mt-28">
         <div className="container">
-          <TrackingWidget variant="floating" initialQuery={initialQuery} logos={logos} />
+          <TrackingWidget variant="floating" initialQuery={initialQuery} />
         </div>
       </section>
 
@@ -88,7 +83,7 @@ export default async function TrackingPage({ searchParams }: TrackingPageProps) 
           <SectionHeading
             eyebrow="Status guide"
             title="What each shipment status means"
-            description="FreightBridge Logistics uses the same milestones on every service, from a single parcel to a full container, whichever carrier is moving it."
+            description="Swiftstream Cargo uses the same clear milestones on every service, from a single parcel to a full container."
           />
 
           <StaggerGroup className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" gap={0.07}>
@@ -117,8 +112,7 @@ export default async function TrackingPage({ searchParams }: TrackingPageProps) 
                 </span>
                 <h3 className="mt-5 font-display text-lg font-semibold text-white">Something look wrong?</h3>
                 <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-300">
-                  If a scan is missing or a delivery window has moved, our team can pull the carrier record and get
-                  you an answer.
+                  If a scan is missing or a delivery window has moved, our operations team can review the shipment record and help.
                 </p>
               </div>
               <div className="on-dark mt-6">
@@ -128,25 +122,6 @@ export default async function TrackingPage({ searchParams }: TrackingPageProps) 
               </div>
             </RevealItem>
           </StaggerGroup>
-
-          <div className="mt-14 rounded-3xl border border-ink-100 bg-ink-50/60 p-6 sm:p-8">
-            <h3 className="font-display text-lg font-semibold text-ink-900">Carriers we move freight on</h3>
-            <p className="mt-1.5 max-w-2xl text-[0.95rem] text-ink-500">
-              Whichever of these is carrying your shipment, it is tracked here. Enter their reference or
-              ours — we work out which from the number itself, and the timeline is the same either way.
-            </p>
-            <ul className="mt-5 flex flex-wrap gap-2">
-              {supportedCarriers().map((carrier) => (
-                <li
-                  key={carrier.id}
-                  className="inline-flex items-center gap-2 rounded-full border border-ink-200 bg-surface px-3.5 py-2 text-sm font-medium text-ink-700"
-                >
-                  <CarrierLogo src={logos[carrier.id]} initials={carrier.initials} size="sm" />
-                  {carrier.name}
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
       </section>
     </>

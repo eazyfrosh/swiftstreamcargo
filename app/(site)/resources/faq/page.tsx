@@ -8,7 +8,7 @@ import { SectionHeading } from '@/components/ui/SectionHeading';
 export const metadata: Metadata = {
   title: 'Freight & Shipping FAQ',
   description:
-    'Answers to common questions about FreightBridge Logistics quoting, tracking, transit times, freight classes, customs documentation, claims and support.',
+    'Answers to common questions about Swiftstream Cargo quoting, tracking, transit times, freight classes, customs documentation, claims and support.',
   alternates: { canonical: '/resources/faq' },
 };
 
@@ -34,7 +34,7 @@ const GROUPS: Array<{ title: string; items: AccordionItem[] }> = [
       {
         question: 'Is there a minimum shipment size?',
         answer:
-          'No. FreightBridge Logistics handles single parcels through to full container loads. Smaller shipments usually move as LTL or parcel; we will recommend whichever is cheaper for the same transit time.',
+          'No. Swiftstream Cargo handles single parcels through to full container loads. Smaller shipments usually move as LTL or parcel; we will recommend whichever is cheaper for the same transit time.',
       },
     ],
   },
@@ -44,7 +44,7 @@ const GROUPS: Array<{ title: string; items: AccordionItem[] }> = [
       {
         question: 'Where do I find my tracking number?',
         answer:
-          'It is on your booking confirmation and every document we send for the shipment: the letters FBX followed by eight digits. If your freight is moving on another carrier and you have their number instead, that works too — the tracking page recognises it and opens the same timeline.',
+          'It is on your Swiftstream Cargo booking confirmation and every shipment document we send. Current references begin with SSC- followed by twelve digits.',
       },
       {
         question: 'How often does tracking update?',

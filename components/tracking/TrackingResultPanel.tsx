@@ -28,10 +28,8 @@ import { QrCode } from './QrCode';
 import { RouteMap } from './RouteMap';
 
 /**
- * The tracking result, in the carrier's own livery.
- *
- * Laid out to match the operator's multi-carrier platform: a gradient header
- * card in the carrier's colours, a progress bar and last-known location, a
+ * The tracking result in Swiftstream Cargo's visual identity: a gradient header
+ * card, a progress bar and last-known location, a
  * route overview, then history beside a details column.
  *
  * One deliberate departure. That platform's details card names the sender and
@@ -44,10 +42,10 @@ import { RouteMap } from './RouteMap';
 
 const STAGE_ICONS: Record<string, typeof CircleDot> = {
   Pending: Hourglass,
-  'Order Confirmed': CircleDot,
+  'Shipment Created': CircleDot,
   'Picked Up': Truck,
   'In Transit': Warehouse,
-  'Customs Clearance': FileCheck2,
+  'Arrived at Facility': FileCheck2,
   'Out for Delivery': Home,
   Delivered: CheckCircle2,
 };
@@ -62,7 +60,7 @@ const STAGE_ICONS: Record<string, typeof CircleDot> = {
  */
 function progressPercent(result: TrackingResult): number {
   const reached =
-    result.status === 'Exception'
+    result.status === 'On Hold'
       ? [...result.events].reverse().find((event) => event.timestamp !== null)?.stage
       : result.status;
 
@@ -82,8 +80,7 @@ export function TrackingResultPanel({
 }) {
   const [copied, setCopied] = useState(false);
 
-  const carrier = carrierById(result.carrierId ?? OWN_CARRIER_ID);
-  const onOwnNetwork = !result.carrierId || result.carrierId === OWN_CARRIER_ID;
+  const carrier = carrierById(OWN_CARRIER_ID);
   const tone = statusTone(result.status);
 
   // Newest first, which is the order someone checking on a shipment reads in:
@@ -110,7 +107,7 @@ export function TrackingResultPanel({
   }
 
   return (
-    <CarrierThemeScope carrierId={result.carrierId} className="mt-6">
+    <CarrierThemeScope carrierId={OWN_CARRIER_ID} className="mt-6">
       {/* Header actions */}
       <div className="no-print mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -155,13 +152,13 @@ export function TrackingResultPanel({
             <div className="flex items-center gap-3">
               <CarrierLogo
                 src={logos[carrier?.id ?? '']}
-                initials={carrier?.initials ?? 'FB'}
+                initials={carrier?.initials ?? 'SC'}
                 size="lg"
                 className="shadow-lg"
               />
               <div>
                 <p className="text-sm font-medium text-[var(--carrier-on-primary)] opacity-80">
-                  {carrier?.name ?? result.carrier} · {result.service}
+                  {carrier?.name ?? 'Swiftstream Cargo'} · {result.service}
                 </p>
                 <span className="mt-1 inline-flex items-center gap-1.5 rounded-full bg-[color-mix(in_srgb,var(--carrier-on-primary)_20%,transparent)] px-2.5 py-1 text-xs font-semibold text-[var(--carrier-on-primary)]">
                   <span aria-hidden="true" className={cn('h-1.5 w-1.5 rounded-full', tone.dot)} />
@@ -205,15 +202,6 @@ export function TrackingResultPanel({
             <p className="text-ink-400">Updated {timeAgo(result.lastUpdate)}</p>
           </div>
 
-          {!onOwnNetwork && result.carrierTrackingNumber && (
-            <p className="mt-3 border-t border-ink-100 pt-3 text-sm text-ink-500">
-              {carrier?.name} reference{' '}
-              <span className="font-mono text-[0.92em] font-semibold text-ink-900">
-                {result.carrierTrackingNumber}
-              </span>{' '}
-              — tracked here, on this page.
-            </p>
-          )}
         </div>
       </motion.div>
 

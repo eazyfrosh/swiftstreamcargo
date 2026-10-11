@@ -215,7 +215,7 @@ export function renderHtml(body: string, options: { companyName: string; trackin
         <tr><td style="background:#111111;padding:20px 28px;">
           <table role="presentation" cellpadding="0" cellspacing="0"><tr>
           ${options.logoUrl ? `<td width="48" style="width:48px;vertical-align:middle;">
-            <img src="${escapeHtml(options.logoUrl)}" width="36" height="36" alt="FreightBridge bridge logo" style="display:block;width:36px;height:36px;border:0;">
+            <img src="${escapeHtml(options.logoUrl)}" width="36" height="36" alt="Swiftstream Cargo logo" style="display:block;width:36px;height:36px;border:0;">
           </td>` : ''}
           <td style="vertical-align:middle;color:#ffffff;font-size:18px;font-weight:700;letter-spacing:-0.02em;font-family:Helvetica,Arial,sans-serif;">
             ${escapeHtml(options.companyName)}

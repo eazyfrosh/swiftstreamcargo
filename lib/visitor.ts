@@ -82,7 +82,7 @@ export function visitorEmail(visitor: VisitorMetadata, siteUrl: string) {
 <body style="margin:0;background:#f5f5f5;font-family:Arial,sans-serif;color:#222;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td align="center" style="padding:24px 12px;">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:white;border:1px solid #e6e6e6;border-radius:12px;">
-<tr><td style="padding:24px;background:#111;color:white;"><h1 style="margin:0;font-size:24px;">New Website Visitor</h1><p style="margin:8px 0 0;font-size:14px;">FreightBridge Logistics</p></td></tr>
+<tr><td style="padding:24px;background:#111;color:white;"><h1 style="margin:0;font-size:24px;">New Website Visitor</h1><p style="margin:8px 0 0;font-size:14px;">Swiftstream Cargo</p></td></tr>
 <tr><td style="padding:24px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="table-layout:fixed;">
 ${rows.map(([label, value]) => `<tr><td width="38%" style="padding:10px 8px 10px 0;vertical-align:top;font-size:14px;color:#666;border-bottom:1px solid #eee;">${label}</td><td style="padding:10px 0;font-size:14px;line-height:1.5;overflow-wrap:anywhere;word-break:break-word;border-bottom:1px solid #eee;">${escape(value)}</td></tr>`).join('')}
 </table><p style="margin:24px 0 8px;"><a href="${escape(siteUrl)}" style="display:inline-block;padding:14px 22px;background:#c24500;color:white;font-weight:bold;text-decoration:none;border-radius:8px;">Open Website</a></p>

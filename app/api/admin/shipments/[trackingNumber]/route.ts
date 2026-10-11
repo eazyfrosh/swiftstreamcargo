@@ -7,6 +7,8 @@ import {
   validateShipmentPatch,
 } from '@/lib/shipments';
 import { normalizeTrackingNumber } from '@/lib/tracking';
+import { adminDb } from '@/lib/firebase/admin';
+import { writeAudit } from '@/lib/operations';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -73,6 +75,7 @@ export async function PATCH(request: Request, { params }: Params) {
     // A warning is not a failure: the edit saved. It says the carrier tracking
     // number does not look like one that carrier issues, which the operator
     // should see before it goes out to a customer.
+    await writeAudit(session.email, 'shipment.updated', number);
     return NextResponse.json({
       ok: true,
       warning: clash
@@ -84,4 +87,18 @@ export async function PATCH(request: Request, { params }: Params) {
     console.error('[admin/shipments] update failed:', error);
     return NextResponse.json({ error: 'Could not save the shipment.' }, { status: 500 });
   }
+}
+
+export async function DELETE(_request: Request, { params }: Params) {
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: 'Not authorised.' }, { status: 401 });
+  const { trackingNumber } = await params;
+  const number = normalizeTrackingNumber(decodeURIComponent(trackingNumber));
+  const db = adminDb();
+  if (!db) return NextResponse.json({ error: 'Firestore is not configured.' }, { status: 503 });
+  const ref = db.collection('shipments').doc(number);
+  if (!(await ref.get()).exists) return NextResponse.json({ error: 'Unknown shipment.' }, { status: 404 });
+  await ref.set({ archived: true, archivedAt: new Date().toISOString() }, { merge: true });
+  await writeAudit(session.email, 'shipment.archived', number);
+  return NextResponse.json({ ok: true });
 }

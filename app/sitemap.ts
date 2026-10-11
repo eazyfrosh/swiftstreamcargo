@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { SITE } from '@/lib/site';
+import { SERVICES } from '@/lib/site';
 
 const ROUTES: Array<{ path: string; priority: number; changeFrequency: 'weekly' | 'monthly' | 'yearly' }> = [
   { path: '/', priority: 1, changeFrequency: 'weekly' },
@@ -17,7 +18,7 @@ const ROUTES: Array<{ path: string; priority: number; changeFrequency: 'weekly' 
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date();
-  return ROUTES.map((route) => ({
+  return [...ROUTES, ...SERVICES.map((service) => ({ path: `/services/${service.slug}`, priority: 0.8, changeFrequency: 'monthly' as const }))].map((route) => ({
     url: `${SITE.url}${route.path}`,
     lastModified,
     changeFrequency: route.changeFrequency,

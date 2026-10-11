@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
  * Everything inside reads `--carrier-primary` and friends, which `globals.css`
  * also declares at `:root` with our own brand as the fallback — so a themed
  * component still renders correctly outside a scope, and a carrier with no
- * entry in the map looks like FreightBridge rather than looking broken.
+ * entry in the map looks like Swiftstream rather than looking broken.
  *
  * Custom properties rather than Tailwind classes because the value is data:
  * there is no set of eleven carrier colour classes to purge-safely generate,

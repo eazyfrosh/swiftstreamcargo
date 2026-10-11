@@ -16,7 +16,7 @@ import { serverEmulator, serviceAccountRaw } from './config';
  * modules across route handlers and a second `initializeApp` throws.
  */
 
-const APP_NAME = 'freightbridge-admin';
+const APP_NAME = 'swiftstream-cargo-admin';
 
 function parseServiceAccount() {
   const raw = serviceAccountRaw();
@@ -62,7 +62,7 @@ function adminApp(): App | null {
   // only the project id matters — so allow starting without one.
   if (serverEmulator()) {
     const projectId =
-      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT || 'demo-freightbridge';
+      process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.GCLOUD_PROJECT || 'demo-swiftstream-cargo';
     return initializeApp({ projectId }, APP_NAME);
   }
 

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import { addTrackingEvent, findShipment, validateEvent } from '@/lib/shipments';
 import { normalizeTrackingNumber } from '@/lib/tracking';
+import { writeAudit } from '@/lib/operations';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -43,6 +44,7 @@ export async function POST(request: Request, { params }: Params) {
       );
     }
 
+    await writeAudit(session.email, 'shipment.event_added', number, `${validated.event.stage} · ${validated.event.location}`);
     return NextResponse.json({ ok: true, shipment: saved });
   } catch (error) {
     console.error('[admin/shipments] add event failed:', error);

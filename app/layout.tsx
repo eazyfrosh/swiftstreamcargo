@@ -1,28 +1,14 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Sora } from 'next/font/google';
 import type { ReactNode } from 'react';
 import { SITE } from '@/lib/site';
 import { THEME_INIT_SCRIPT } from '@/lib/theme';
 import './globals.css';
 
-const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-inter',
-});
-
-const sora = Sora({
-  subsets: ['latin'],
-  display: 'swap',
-  weight: ['500', '600', '700'],
-  variable: '--font-display',
-});
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: 'FreightBridge Logistics | Freight, Warehousing & Supply Chain',
-    template: '%s | FreightBridge Logistics',
+    default: 'Swiftstream Cargo | Freight, Warehousing & Supply Chain',
+    template: '%s | Swiftstream Cargo',
   },
   description: SITE.description,
   applicationName: SITE.name,
@@ -46,12 +32,12 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: SITE.url,
     siteName: SITE.name,
-    title: 'FreightBridge Logistics | Freight, Warehousing & Supply Chain',
+    title: 'Swiftstream Cargo | Freight, Warehousing & Supply Chain',
     description: SITE.description,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FreightBridge Logistics | Freight, Warehousing & Supply Chain',
+    title: 'Swiftstream Cargo | Freight, Warehousing & Supply Chain',
     description: SITE.description,
   },
   robots: {
@@ -99,7 +85,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     // `suppressHydrationWarning` because the inline script below adds the
     // `dark` class to this element before React hydrates, which React would
     // otherwise report as a server/client mismatch.
-    <html lang="en" className={`${inter.variable} ${sora.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         {/* Applies the saved theme before first paint. Anything later — an
             effect, a layout — runs after the browser has already painted, and

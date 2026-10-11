@@ -7,15 +7,15 @@ import { Reveal } from '@/components/ui/Reveal';
 export const metadata: Metadata = {
   title: 'Get a Freight Quote',
   description:
-    'Request a freight quote from FreightBridge Logistics. Share your lane and shipment type — a logistics specialist responds with options and pricing.',
+    'Request a freight quote from Swiftstream Cargo. Share your lane and shipment type — a logistics specialist responds with options and pricing.',
   alternates: { canonical: '/quote' },
 };
 
 const ASSURANCES = [
-  { icon: Clock4, title: 'Fast turnaround', body: 'Most quotes returned within one business hour.' },
-  { icon: HandCoins, title: 'Pricing that holds', body: 'Rates are honoured for the window we quote them in.' },
-  { icon: FileCheck2, title: 'Paperwork handled', body: 'Customs and documentation prepared before dispatch.' },
-  { icon: Headphones, title: 'A named specialist', body: 'One point of contact from quote to delivery.' },
+  { icon: Clock4, title: 'Clear confirmation', body: 'A reference appears only after the server stores your request.' },
+  { icon: HandCoins, title: 'No account required', body: 'Request pricing without creating a customer login.' },
+  { icon: FileCheck2, title: 'Useful shipment detail', body: 'Share the route and shipment type so operations can review it.' },
+  { icon: Headphones, title: 'Human follow-up', body: 'Your contact details are available only to the operations team.' },
 ];
 
 export default function QuotePage() {
@@ -48,12 +48,6 @@ export default function QuotePage() {
             <QuoteLeadForm />
           </Reveal>
 
-          <Reveal delay={0.1}>
-            <p className="mx-auto mt-8 max-w-2xl text-center text-sm text-ink-400">
-              This prototype does not submit to a backend — your details stay in the browser and are cleared when you
-              reload the page.
-            </p>
-          </Reveal>
         </div>
       </section>
     </>

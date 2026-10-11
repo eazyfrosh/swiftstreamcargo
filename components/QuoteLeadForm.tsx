@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { EASE_PREMIUM } from '@/lib/motion';
-import { cn, sleep } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Button } from './ui/Button';
 import { SelectField, TextField } from './ui/Field';
 import { useReducedMotion } from '@/lib/use-reduced-motion';
@@ -63,6 +63,9 @@ export function QuoteLeadForm({ className }: { className?: string }) {
   const [submitted, setSubmitted] = useState(false);
   const [pending, setPending] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [serverError, setServerError] = useState('');
+  const [reference, setReference] = useState('');
+  const [startedAt] = useState(() => Date.now());
   const formRef = useRef<HTMLFormElement>(null);
   const reduced = useReducedMotion();
 
@@ -87,10 +90,18 @@ export function QuoteLeadForm({ className }: { className?: string }) {
     }
 
     setPending(true);
-    // No backend in this prototype — the delay exercises the pending state.
-    await sleep(1000);
-    setPending(false);
-    setSuccess(true);
+    setServerError('');
+    try {
+      const response = await fetch('/api/enquiries', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'quote', ...values, startedAt, website: '' }),
+      });
+      const data = await response.json().catch(() => ({})) as { error?: string; reference?: string };
+      if (!response.ok) { setServerError(data.error ?? 'Could not send your request.'); return; }
+      setReference(data.reference ?? '');
+      setSuccess(true);
+    } catch { setServerError('Could not reach the server. Check your connection and try again.'); }
+    finally { setPending(false); }
   }
 
   return (
@@ -115,6 +126,7 @@ export function QuoteLeadForm({ className }: { className?: string }) {
               <span className="font-medium text-ink-800">{values.destination}</span>, usually within one business
               hour.
             </p>
+            {reference && <p className="mt-3 font-mono text-sm text-ink-500">Reference {reference}</p>}
             <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
               <Button
                 variant="secondary"
@@ -143,6 +155,7 @@ export function QuoteLeadForm({ className }: { className?: string }) {
             exit={{ opacity: 0 }}
             className="rounded-4xl border border-ink-100 bg-surface p-6 shadow-card sm:p-8 lg:p-10"
           >
+            <div className="sr-only" aria-hidden="true"><label htmlFor="quote-website">Website</label><input id="quote-website" name="website" tabIndex={-1} autoComplete="off" /></div>
             <div className="grid gap-5 sm:grid-cols-2">
               <TextField
                 id="name"
@@ -235,10 +248,9 @@ export function QuoteLeadForm({ className }: { className?: string }) {
                   </>
                 )}
               </Button>
-              <p className="text-xs text-ink-400">
-                Prototype form — nothing is sent and no data is stored.
-              </p>
+              <p className="text-xs text-ink-400">Your request is stored securely for the operations team.</p>
             </div>
+            {serverError && <p role="alert" className="mt-4 text-sm text-rose-600 dark:text-rose-300">{serverError}</p>}
           </motion.form>
         )}
       </AnimatePresence>

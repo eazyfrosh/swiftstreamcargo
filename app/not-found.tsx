@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Footer } from '@/components/Footer';
 import { Navbar } from '@/components/Navbar';
 import { Button } from '@/components/ui/Button';
+import { getWebsiteConfig } from '@/lib/operations';
 
 export const metadata: Metadata = {
   title: 'Page not found',
@@ -13,10 +14,11 @@ export const metadata: Metadata = {
  * Root-level 404, so it renders outside the (site) group and has to bring the
  * public chrome with it.
  */
-export default function NotFound() {
+export default async function NotFound() {
+  const config = await getWebsiteConfig();
   return (
     <>
-      <Navbar />
+      <Navbar config={config} />
       <main id="main">
     <section className="relative isolate flex min-h-[80vh] items-center overflow-hidden bg-brand-500 px-5 py-32 text-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
@@ -52,7 +54,7 @@ export default function NotFound() {
       </div>
     </section>
       </main>
-      <Footer />
+      <Footer config={config} />
     </>
   );
 }

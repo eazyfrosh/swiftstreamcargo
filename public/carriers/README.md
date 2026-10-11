@@ -14,7 +14,7 @@ The name before the extension must be the carrier's id, exactly:
 
 | File            | Carrier                 |
 | --------------- | ----------------------- |
-| `freightbridge` | FreightBridge Logistics |
+| `freightbridge` | Swiftstream Cargo |
 | `ups`           | UPS                     |
 | `fedex`         | FedEx                   |
 | `usps`          | USPS                    |

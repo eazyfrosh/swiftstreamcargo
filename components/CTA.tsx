@@ -19,7 +19,7 @@ export function CTA() {
             <div className="on-dark relative mx-auto max-w-2xl">
               <span className="eyebrow-dark">
                 <span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true" />
-                Move Freight. Build Connections.
+                Cargo in Motion. Confidence at Every Mile.
               </span>
 
               <h2 className="display-1 mt-7 text-white">
@@ -37,13 +37,11 @@ export function CTA() {
                 </Button>
                 <Button href="/contact" size="lg" variant="outlineDark" className="w-full sm:w-auto">
                   <MessageSquare className="h-[1.05rem] w-[1.05rem]" />
-                  Contact FreightBridge Logistics
+                  Contact Swiftstream Cargo
                 </Button>
               </div>
 
-              <p className="mt-8 text-sm text-white">
-                No obligation · Most quotes returned within one business hour
-              </p>
+              <p className="mt-8 text-sm text-white">No account required to request a quote.</p>
             </div>
           </div>
         </Reveal>

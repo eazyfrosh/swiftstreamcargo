@@ -2,13 +2,13 @@ import type { LucideIcon } from 'lucide-react';
 import {
   Boxes,
   Clock4,
-  Gauge,
   Globe2,
   Headphones,
   LifeBuoy,
   MapPin,
   Network,
   PackageSearch,
+  Plane,
   Route,
   ShieldCheck,
   Ship,
@@ -17,12 +17,12 @@ import {
 } from 'lucide-react';
 
 export const SITE = {
-  name: 'FreightBridge Logistics',
-  tagline: 'Move Freight. Build Connections.',
+  name: 'Swiftstream Cargo',
+  tagline: 'Cargo in Motion. Confidence at Every Mile.',
   description:
-    'FreightBridge Logistics provides reliable freight transportation, delivery, warehousing, and supply chain solutions for modern businesses.',
-  url: 'https://freightbridge.example.com',
-  email: 'hello@freightbridge.com',
+    'Swiftstream Cargo provides reliable freight transportation, delivery, warehousing, and supply chain solutions for modern businesses.',
+  url: 'https://www.swiftstreamcargo.com',
+  email: 'hello@swiftstreamcargo.com',
   phone: '+1 (312) 555-0142',
   /**
    * Customer-service WhatsApp, in wa.me's own format: country code and
@@ -67,7 +67,7 @@ export const HERO_MEDIA = {
   video: {
     src: '/video/hero-freight.mp4',
     webm: '/video/hero-freight.webm',
-    description: 'Freight moving through a FreightBridge Logistics distribution network',
+    description: 'Freight moving through a Swiftstream Cargo distribution network',
   } satisfies VideoAsset,
 
   /** Still image — the poster for the video, and the hero when there is none. */
@@ -75,7 +75,7 @@ export const HERO_MEDIA = {
   alt: 'An articulated lorry hauling a shipping container along a multi-lane highway',
   fallbackSrc: '/images/hero-freight.svg',
   fallbackAlt:
-    'Illustration of a FreightBridge Logistics semi-truck travelling a highway at dusk past a container yard and gantry cranes',
+    'Illustration of a Swiftstream Cargo semi-truck travelling a highway at dusk past a container yard and gantry cranes',
 } as const;
 
 /** A looping background clip. Leave `src` empty to fall back to the still. */
@@ -111,15 +111,15 @@ export const IMAGERY: Record<'road' | 'port' | 'warehouse' | 'lastMile' | 'drive
   /** Poster for ROAD_VIDEO — a frame from that clip, so the two match. */
   driver: {
     src: '/images/on-the-road.jpg',
-    alt: 'A FreightBridge Logistics delivery driver holding a clipboard at a customer’s gate',
+    alt: 'A Swiftstream Cargo delivery driver holding a clipboard at a customer’s gate',
     fallbackSrc: '/images/hero-freight.svg',
-    fallbackAlt: 'Illustration of a FreightBridge Logistics truck on the highway beside a container yard',
+    fallbackAlt: 'Illustration of a Swiftstream Cargo truck on the highway beside a container yard',
   },
   road: {
     src: '/images/hero-freight.png',
     alt: 'An articulated lorry hauling a shipping container along a multi-lane highway',
     fallbackSrc: '/images/hero-freight.svg',
-    fallbackAlt: 'Illustration of a FreightBridge Logistics truck on the highway beside a container yard',
+    fallbackAlt: 'Illustration of a Swiftstream Cargo truck on the highway beside a container yard',
   },
   port: {
     src: '/images/port-terminal.png',
@@ -131,13 +131,13 @@ export const IMAGERY: Record<'road' | 'port' | 'warehouse' | 'lastMile' | 'drive
     src: '/images/inside-the-network.jpg',
     alt: 'A woman smiling as she receives two parcels at her front door',
     fallbackSrc: '/images/warehouse-ops.svg',
-    fallbackAlt: 'Illustration of a FreightBridge Logistics fulfillment warehouse with pallet racking and a forklift',
+    fallbackAlt: 'Illustration of a Swiftstream Cargo fulfillment warehouse with pallet racking and a forklift',
   },
   warehouse: {
     src: '/images/warehouse-ops.png',
     alt: 'Two warehouse workers walking between tall pallet racks, one carrying a box',
     fallbackSrc: '/images/warehouse-ops.svg',
-    fallbackAlt: 'Illustration of a FreightBridge Logistics fulfillment warehouse with pallet racking and a forklift',
+    fallbackAlt: 'Illustration of a Swiftstream Cargo fulfillment warehouse with pallet racking and a forklift',
   },
 };
 
@@ -152,7 +152,7 @@ export const IMAGERY: Record<'road' | 'port' | 'warehouse' | 'lastMile' | 'drive
 export const STORY_VIDEO: VideoAsset = {
   src: '/video/inside-the-network.mp4',
   webm: '/video/inside-the-network.webm',
-  description: 'A FreightBridge Logistics delivery being handed over at a customer’s front door',
+  description: 'A Swiftstream Cargo delivery being handed over at a customer’s front door',
 };
 
 /**
@@ -173,7 +173,7 @@ export const STORY_VIDEO: VideoAsset = {
 export const ROAD_VIDEO: VideoAsset = {
   src: '/video/on-the-road.mp4',
   webm: '/video/on-the-road.webm',
-  description: 'A FreightBridge Logistics delivery driver collecting a signature at a customer’s gate',
+  description: 'A Swiftstream Cargo delivery driver collecting a signature at a customer’s gate',
 };
 
 export interface NavLink {
@@ -200,58 +200,29 @@ export const SERVICES: Array<{
   highlights: string[];
 }> = [
   {
-    slug: 'freight-transportation',
-    title: 'Freight Transportation',
-    tagline: 'Reliable transportation for full and partial loads.',
-    description:
-      'FTL and LTL capacity across a vetted carrier network, with lane pricing that holds and dispatch that answers.',
-    icon: Truck,
-    highlights: ['FTL & LTL capacity', 'Dedicated lanes', 'Temperature-controlled options'],
+    slug: 'air-freight', title: 'Air Freight', tagline: 'Priority movement for time-sensitive cargo.',
+    description: 'Airport-to-airport and door-to-door coordination with documentation, handoffs, and milestones managed in one record.',
+    icon: Plane, highlights: ['Priority and economy options', 'Export documentation support', 'Door-to-door coordination'],
   },
   {
-    slug: 'last-mile-delivery',
-    title: 'Last-Mile Delivery',
-    tagline: 'Fast and dependable delivery to your customers.',
-    description:
-      'Metro delivery routes with live driver tracking, recipient notifications, and proof of delivery in every scan.',
-    icon: MapPin,
-    highlights: ['Live driver ETAs', 'Recipient notifications', 'Photo & signature POD'],
+    slug: 'sea-freight', title: 'Sea Freight', tagline: 'Flexible ocean options for global supply chains.',
+    description: 'FCL and LCL coordination with clear origin, port, customs, and destination milestones stored against the shipment.',
+    icon: Ship, highlights: ['FCL and LCL options', 'Port coordination', 'Customs documentation support'],
   },
   {
-    slug: 'warehousing',
-    title: 'Warehousing',
-    tagline: 'Flexible storage and fulfillment solutions.',
-    description:
-      'Short-term overflow or long-term fulfillment, with real-time inventory counts synced to your systems.',
-    icon: Warehouse,
-    highlights: ['Pick, pack & fulfillment', 'Cross-docking', 'Real-time inventory'],
+    slug: 'road-transport', title: 'Road Transport', tagline: 'Reliable regional and long-haul road freight.',
+    description: 'Full-load, part-load, and dedicated vehicle planning with recorded pickup, facility, transit, and delivery events.',
+    icon: Truck, highlights: ['Full and partial loads', 'Dedicated vehicle options', 'Scheduled milestone updates'],
   },
   {
-    slug: 'freight-forwarding',
-    title: 'Freight Forwarding',
-    tagline: 'Simplified movement of goods across borders.',
-    description:
-      'Air and ocean forwarding with customs documentation handled up front so shipments do not sit at the border.',
-    icon: Ship,
-    highlights: ['Air & ocean FCL/LCL', 'Customs documentation', 'Duty & tariff guidance'],
+    slug: 'warehousing', title: 'Warehousing', tagline: 'Flexible storage and fulfillment operations.',
+    description: 'Short-term overflow, cross-docking, and fulfillment support shaped around your inventory and dispatch needs.',
+    icon: Warehouse, highlights: ['Pick, pack and fulfillment', 'Cross-docking', 'Inventory handling'],
   },
   {
-    slug: 'supply-chain',
-    title: 'Supply Chain Solutions',
-    tagline: 'Technology-driven logistics management.',
-    description:
-      'Network design, carrier management, and reporting that turns freight spend into decisions you can defend.',
-    icon: Network,
-    highlights: ['Network design', 'Carrier management', 'Spend analytics'],
-  },
-  {
-    slug: 'same-day-delivery',
-    title: 'Same-Day Delivery',
-    tagline: 'Time-sensitive delivery when every hour matters.',
-    description:
-      'Two-hour pickup windows and direct point-to-point runs for the shipments that cannot wait until tomorrow.',
-    icon: Clock4,
-    highlights: ['2-hour pickup windows', 'Direct point-to-point', 'Live exception alerts'],
+    slug: 'express-delivery', title: 'Express Delivery', tagline: 'Direct delivery for urgent consignments.',
+    description: 'Priority pickup and point-to-point delivery with every public update tied to a recorded operations event.',
+    icon: Clock4, highlights: ['Priority pickup planning', 'Direct point-to-point options', 'Recorded exception handling'],
   },
 ];
 
@@ -271,12 +242,12 @@ export const SOLUTIONS: NavLink[] = [
   {
     label: 'Cross-Border Trade',
     href: '/services#solutions',
-    description: 'Forwarding and customs support across five regions.',
+    description: 'Forwarding and customs documentation support for international routes.',
     icon: Globe2,
   },
   {
     label: 'Enterprise Logistics',
-    href: '/about#enterprise',
+    href: '/services#solutions',
     description: 'Managed transportation for multi-site operations.',
     icon: ShieldCheck,
   },
@@ -299,7 +270,7 @@ export const NAV_ITEMS: NavItem[] = [
     href: '/services',
     children: SERVICES.map((service) => ({
       label: service.title,
-      href: `/services#${service.slug}`,
+      href: `/services/${service.slug}`,
       description: service.tagline,
       icon: service.icon,
     })),
@@ -330,7 +301,7 @@ export const NAV_ITEMS: NavItem[] = [
       {
         label: 'Support',
         href: '/contact',
-        description: 'Reach a logistics specialist any time.',
+        description: 'Reach the logistics support team.',
         icon: Headphones,
       },
     ],
@@ -339,10 +310,8 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Company',
     href: '/about',
     children: [
-      { label: 'About', href: '/about', description: 'Why we built FreightBridge Logistics.', icon: Globe2 },
-      { label: 'Careers', href: '/about#careers', description: 'Open roles across our network.', icon: Gauge },
+      { label: 'About', href: '/about', description: 'Why we built Swiftstream Cargo.', icon: Globe2 },
       { label: 'Contact', href: '/contact', description: 'Talk to sales, support, or dispatch.', icon: Headphones },
-      { label: 'Partners', href: '/about#partners', description: 'Carriers and technology partners.', icon: Network },
     ],
   },
 ];
@@ -351,20 +320,18 @@ export const FOOTER_COLUMNS: Array<{ title: string; links: NavLink[] }> = [
   {
     title: 'Solutions',
     links: [
-      { label: 'Freight Transportation', href: '/services#freight-transportation' },
-      { label: 'Last-Mile Delivery', href: '/services#last-mile-delivery' },
-      { label: 'Warehousing', href: '/services#warehousing' },
-      { label: 'Freight Forwarding', href: '/services#freight-forwarding' },
-      { label: 'Supply Chain', href: '/services#supply-chain' },
+      { label: 'Air Freight', href: '/services/air-freight' },
+      { label: 'Sea Freight', href: '/services/sea-freight' },
+      { label: 'Road Transport', href: '/services/road-transport' },
+      { label: 'Warehousing', href: '/services/warehousing' },
+      { label: 'Express Delivery', href: '/services/express-delivery' },
     ],
   },
   {
     title: 'Company',
     links: [
       { label: 'About', href: '/about' },
-      { label: 'Careers', href: '/about#careers' },
       { label: 'Contact', href: '/contact' },
-      { label: 'Partners', href: '/about#partners' },
     ],
   },
   {

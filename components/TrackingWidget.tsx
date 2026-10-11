@@ -5,7 +5,6 @@ import {
   AlertTriangle,
   ArrowRight,
   CalendarClock,
-  Check,
   CircleDashed,
   Flag,
   Headphones,
@@ -15,21 +14,19 @@ import {
   PackageSearch,
   RefreshCw,
   Search,
-  Truck,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useId, useState } from 'react';
 import { EASE_PREMIUM } from '@/lib/motion';
-import { CarrierLogo } from '@/components/CarrierLogo';
 import { TrackingResultPanel } from '@/components/tracking/TrackingResultPanel';
-import { OWN_CARRIER_ID, carrierById, detectCarrier, type CarrierLogos } from '@/lib/carriers';
+import { type CarrierLogos } from '@/lib/carriers';
 import {
   lookupShipment,
   statusTone,
   type LookupOutcome,
   type TrackingResult,
 } from '@/lib/tracking';
-import { cn, formatDate, formatDateTime, timeAgo } from '@/lib/utils';
+import { cn, formatDate, timeAgo } from '@/lib/utils';
 import { useReducedMotion } from '@/lib/use-reduced-motion';
 
 type Status = 'idle' | 'loading' | 'done';
@@ -56,11 +53,11 @@ const ERROR_COPY: Record<'empty' | 'malformed' | 'not-found', { title: string; b
   },
   malformed: {
     title: "That doesn't look like a tracking number",
-    body: 'We recognise FreightBridge Logistics numbers plus FedEx, UPS, USPS, DHL, Royal Mail, Canada Post and more. Check for a missing or extra character.',
+    body: 'Enter the Swiftstream Cargo number from your booking confirmation. It begins with SSC-.',
   },
   'not-found': {
     title: 'No shipment found',
-    body: 'We track shipments booked through FreightBridge Logistics, under our reference or the carrier\u2019s. Double-check the number against your booking confirmation — if it looks right, our team can trace it for you.',
+    body: 'Double-check the Swiftstream Cargo number against your booking confirmation. If it looks right, our team can trace it for you.',
   },
 };
 
@@ -94,7 +91,6 @@ export function TrackingWidget({
 
   const floating = variant === 'floating';
   const result = outcome?.ok === true ? outcome.shipment : null;
-  const carrierResult = outcome?.ok === 'carrier' ? outcome : null;
   const error = outcome?.ok === false ? outcome.reason : null;
 
   // Refresh the displayed shipment without clearing its history or interrupting
@@ -123,11 +119,6 @@ export function TrackingWidget({
     };
   }, [displayedNumber]);
 
-  // Detected live, as they type. Telling someone "that looks like a UPS
-  // number" before they submit is the difference between a search box and one
-  // that appears to understand what was pasted into it.
-  const detected = query.trim() ? detectCarrier(query) : null;
-
   return (
     <div
       className={cn(
@@ -146,9 +137,7 @@ export function TrackingWidget({
             Track your shipment
           </h2>
           <p className="mt-2 max-w-md text-[0.95rem] text-ink-500">
-            One box, either reference. Our <span className="font-mono">FBX-</span> number or the
-            carrier&rsquo;s own — FedEx, UPS, USPS, DHL and the rest — both open the same live timeline
-            here.
+            Enter the <span className="font-mono">SSC-</span> number from your Swiftstream Cargo booking confirmation to open its recorded timeline.
           </p>
         </div>
 
@@ -220,26 +209,8 @@ export function TrackingWidget({
           </button>
         </div>
 
-        {/* Doubles as the input's description, so a screen reader hears the
-            detected carrier at the same moment a sighted user sees it. */}
         <p id={`${inputId}-help`} className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-400">
-          {detected ? (
-            <>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 dark:bg-brand-500/10 px-2.5 py-1 text-xs font-semibold text-brand-700 dark:text-brand-300">
-                <Truck className="h-3 w-3" aria-hidden="true" />
-                {detected.carrier.name}
-              </span>
-              <span>
-                {detected.carrier.id === 'freightbridge'
-                  ? 'One of ours — press Track for the full timeline.'
-                  : detected.verified
-                    ? 'Recognised, and the check digit matches. Press Track to open it here.'
-                    : 'Looks like this carrier — press Track to open it here.'}
-              </span>
-            </>
-          ) : (
-            'Works with FreightBridge Logistics numbers and with FedEx, UPS, USPS, DHL and more.'
-          )}
+          Swiftstream Cargo tracking numbers begin with <span className="font-mono font-medium text-ink-600">SSC-</span>.
         </p>
       </form>
 
@@ -254,73 +225,6 @@ export function TrackingWidget({
               transition={{ duration: 0.25 }}
             >
               <TrackingSkeleton />
-            </motion.div>
-          )}
-
-          {status === 'done' && carrierResult && (
-            <motion.div
-              key={`carrier-${carrierResult.carrier.id}-${carrierResult.query}`}
-              initial={reduced ? { opacity: 0 } : { opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: EASE_PREMIUM }}
-              className="mt-6 rounded-3xl border border-ink-100 bg-surface p-5 shadow-soft sm:p-6"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-4">
-                <div className="flex items-start gap-3.5">
-                  <CarrierLogo
-                    src={logos[carrierResult.carrier.id]}
-                    initials={carrierResult.carrier.initials}
-                    size="lg"
-                    className="h-11 min-w-[2.75rem] rounded-xl"
-                  />
-                  <div>
-                    <p className="font-display text-[1.05rem] font-semibold text-ink-900">
-                      {carrierResult.carrier.name}
-                    </p>
-                    <p className="mt-0.5 font-mono text-sm text-ink-500">{carrierResult.query}</p>
-                    {carrierResult.carrier.verified && (
-                      <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                        <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                        Check digit verified
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-              </div>
-
-              {carrierResult.status && (
-                <p className="mt-4 text-[0.95rem] font-medium text-ink-800">{carrierResult.status}</p>
-              )}
-
-              {carrierResult.events && carrierResult.events.length > 0 && (
-                <ol className="mt-4 space-y-3 border-t border-ink-100 pt-4">
-                  {carrierResult.events.slice(0, 8).map((event, index) => (
-                    <li key={`${event.timestamp}-${index}`} className="flex gap-3">
-                      <span
-                        aria-hidden="true"
-                        className={cn(
-                          'mt-1.5 h-2 w-2 shrink-0 rounded-full',
-                          index === 0 ? 'bg-brand-500' : 'bg-ink-300',
-                        )}
-                      />
-                      <div className="min-w-0">
-                        <p className="text-[0.92rem] font-medium text-ink-900">{event.status}</p>
-                        <p className="text-sm text-ink-500">
-                          {[event.location, formatDateTime(event.timestamp)].filter(Boolean).join(' · ')}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
-                </ol>
-              )}
-
-              {carrierResult.note && (
-                <p className="mt-4 border-t border-ink-100 pt-4 text-sm text-ink-500">
-                  {carrierResult.note}
-                </p>
-              )}
             </motion.div>
           )}
 

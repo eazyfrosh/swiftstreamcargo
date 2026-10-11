@@ -6,11 +6,7 @@ import { useState, type FormEvent } from 'react';
 import type { TrackingStage } from '@/lib/tracking';
 
 const EVENT_COPY: Record<TrackingStage, { title: string; description: string }> = {
-  Pending: {
-    title: 'Shipment pending',
-    description: 'Your shipment is awaiting confirmation before it can proceed.',
-  },
-  'Order Confirmed': {
+  'Shipment Created': {
     title: 'Shipment confirmed',
     description: 'Your shipment has been confirmed and is awaiting collection.',
   },
@@ -22,9 +18,9 @@ const EVENT_COPY: Record<TrackingStage, { title: string; description: string }> 
     title: 'Shipment in transit',
     description: 'Your shipment is in transit to its destination.',
   },
-  'Customs Clearance': {
-    title: 'Shipment undergoing customs clearance',
-    description: 'Your shipment is undergoing customs clearance before continuing its journey.',
+  'Arrived at Facility': {
+    title: 'Shipment arrived at facility',
+    description: 'Your shipment has arrived at a processing facility before its next movement.',
   },
   'Out for Delivery': {
     title: 'Shipment out for delivery',
@@ -32,12 +28,16 @@ const EVENT_COPY: Record<TrackingStage, { title: string; description: string }> 
   },
   Delivered: {
     title: 'Shipment delivered',
-    description: 'Your shipment has been delivered. Thank you for choosing FreightBridge Logistics.',
+    description: 'Your shipment has been delivered. Thank you for choosing Swiftstream Cargo.',
+  },
+  'On Hold': {
+    title: 'Shipment on hold',
+    description: 'Movement is temporarily paused. Contact support if you need more information.',
   },
 };
 
 function eventCopy(stage: string) {
-  return EVENT_COPY[stage as TrackingStage] ?? EVENT_COPY.Pending;
+  return EVENT_COPY[stage as TrackingStage] ?? EVENT_COPY['Shipment Created'];
 }
 
 /**

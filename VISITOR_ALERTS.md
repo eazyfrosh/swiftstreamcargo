@@ -8,8 +8,8 @@ Add these in Project Settings → Environment Variables → Production, then red
 | --- | --- |
 | `RESEND_API_KEY` | Existing Resend sending key; never prefix with `NEXT_PUBLIC_` |
 | `VISITOR_ALERT_EMAIL` | The owner's destination email address |
-| `VISITOR_FROM_EMAIL` | `FreightBridge Logistics <support@freightbridgelogistics.app>` |
-| `NEXT_PUBLIC_SITE_URL` | `https://www.freightbridgelogistics.app` |
+| `VISITOR_FROM_EMAIL` | `Swiftstream Cargo <support@swiftstreamcargo.app>` |
+| `NEXT_PUBLIC_SITE_URL` | `https://www.swiftstreamcargo.app` |
 | `FIREBASE_SERVICE_ACCOUNT_KEY` | Existing Firebase Admin service account; leave the working value unchanged |
 
 Verify the sender domain in Resend and allow the API key to send from it. No

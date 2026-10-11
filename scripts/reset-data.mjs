@@ -98,7 +98,7 @@ if (!usingEmulator && !creds) {
 }
 
 const projectId =
-  creds?.projectId || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-freightbridge';
+  creds?.projectId || process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || 'demo-swiftstream-cargo';
 
 initializeApp(creds ? { credential: cert(creds), projectId } : { projectId });
 const db = getFirestore();

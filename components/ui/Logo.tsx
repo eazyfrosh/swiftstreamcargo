@@ -8,17 +8,10 @@ interface LogoProps {
   href?: string;
   showWordmark?: boolean;
   onClick?: () => void;
+  name?: string;
 }
 
-/**
- * Original FreightBridge Logistics wordmark: an abstract bridge span carrying a freight
- * line across two piers, drawn from the brand's own geometry.
- */
-/**
- * On white the mark is an orange tile with a white bridge; on orange or dark
- * grounds it inverts to a white tile, because an orange tile on an orange band
- * all but disappears.
- */
+/** Original Swiftstream Cargo mark: an S-shaped current ending in a forward arrow. */
 export function LogoMark({ tone = 'dark', className }: { tone?: 'dark' | 'light'; className?: string }) {
   const inverted = tone === 'light';
   const stroke = inverted ? '#C24500' : '#FFFFFF';
@@ -34,27 +27,28 @@ export function LogoMark({ tone = 'dark', className }: { tone?: 'dark' | 'light'
       )}
     >
       <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5">
-        {/* Bridge deck */}
-        <path d="M2.5 14h19" stroke={stroke} strokeWidth="2" strokeLinecap="round" />
-        {/* Suspension span */}
         <path
-          d="M3 14c3.2-6.2 14.8-6.2 18 0"
+          d="M4 7.25c2.1-2.1 5.2-3 8.3-2.2 2.1.5 3.8 1.7 5.1 3.1"
           stroke={stroke}
-          strokeWidth="1.7"
+          strokeWidth="2.15"
           strokeLinecap="round"
           fill="none"
-          opacity="0.75"
         />
-        {/* Piers */}
-        <path d="M7 14v5M17 14v5" stroke={stroke} strokeWidth="1.7" strokeLinecap="round" opacity="0.55" />
-        {/* Freight unit crossing the span */}
-        <rect x="9.5" y="8.6" width="5" height="3.6" rx="1" fill={inverted ? '#C24500' : '#121212'} />
+        <path
+          d="M20 16.2c-2.2 2.3-5.6 3.2-8.9 2.2-2.2-.7-4-2-5.3-3.8"
+          stroke={stroke}
+          strokeWidth="2.15"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <path d="M5 11.8h12.2" stroke={stroke} strokeWidth="2.15" strokeLinecap="round" opacity="0.72" />
+        <path d="m14.8 9.2 3 2.6-3 2.6" stroke={stroke} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
       </svg>
     </span>
   );
 }
 
-export function Logo({ tone = 'dark', className, href = '/', showWordmark = true, onClick }: LogoProps) {
+export function Logo({ tone = 'dark', className, href = '/', showWordmark = true, onClick, name = 'Swiftstream Cargo' }: LogoProps) {
   const content = (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
       <LogoMark tone={tone} />
@@ -65,30 +59,14 @@ export function Logo({ tone = 'dark', className, href = '/', showWordmark = true
             tone === 'light' ? 'text-white' : 'text-ink-900',
           )}
         >
-          Freight
-          <span className={tone === 'light' ? 'text-white/75' : 'text-brand-600 dark:text-brand-300'}>Bridge</span>
-          {/* A real space, not a margin. Spacing it with `ml-*` looked right
-              and read as "FreightBridgeLogistics" to a screen reader, and to
-              anyone copying the name off the page.
-
-              Lighter and a size down, so the lockup still reads as one mark
-              rather than three words of equal weight competing in a navbar. */}
-          <span
-            className={cn(
-              'text-[0.82em] font-medium tracking-[-0.02em]',
-              tone === 'light' ? 'text-white/70' : 'text-ink-500',
-            )}
-          >
-            {' '}
-            Logistics
-          </span>
+          {name}
         </span>
       )}
     </span>
   );
 
   return (
-    <Link href={href} onClick={onClick} aria-label="FreightBridge Logistics — home" className="inline-flex rounded-xl">
+    <Link href={href} onClick={onClick} aria-label={`${name} — home`} className="inline-flex rounded-xl">
       {content}
     </Link>
   );

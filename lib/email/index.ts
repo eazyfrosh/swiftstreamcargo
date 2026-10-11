@@ -51,7 +51,7 @@ export function emailConfigError(): string | null {
 }
 
 function siteUrl(): string {
-  return (process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://www.freightbridgelogistics.app').replace(/\/$/, '');
+  return (process.env.NEXT_PUBLIC_SITE_URL?.trim() || 'https://www.swiftstreamcargo.com').replace(/\/$/, '');
 }
 
 // ---------------------------------------------------------------------------

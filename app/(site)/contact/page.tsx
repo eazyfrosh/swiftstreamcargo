@@ -4,23 +4,17 @@ import { ContactForm } from '@/components/ContactForm';
 import { PageHero } from '@/components/PageHero';
 import { Reveal, RevealItem, StaggerGroup } from '@/components/ui/Reveal';
 import { WhatsAppIcon } from '@/components/icons/WhatsApp';
-import { SITE, WHATSAPP_DISPLAY, WHATSAPP_URL } from '@/lib/site';
+import { WHATSAPP_DISPLAY, WHATSAPP_URL } from '@/lib/site';
+import { getWebsiteConfig } from '@/lib/operations';
 
 export const metadata: Metadata = {
-  title: 'Contact FreightBridge Logistics',
+  title: 'Contact Swiftstream Cargo',
   description:
-    'Talk to the FreightBridge Logistics team about a quote, an existing shipment, warehousing, enterprise logistics, or partnerships.',
+    'Talk to the Swiftstream Cargo team about a quote, an existing shipment, warehousing, enterprise logistics, or partnerships.',
   alternates: { canonical: '/contact' },
 };
 
-const CHANNELS = [
-  {
-    icon: Phone,
-    title: 'Call dispatch',
-    body: 'Live coverage for active shipments, 24 hours a day.',
-    action: SITE.phone,
-    href: `tel:${SITE.phone.replace(/[^+\d]/g, '')}`,
-  },
+const BASE_CHANNELS = [
   {
     icon: WhatsAppIcon,
     title: 'WhatsApp us',
@@ -28,13 +22,6 @@ const CHANNELS = [
     action: WHATSAPP_DISPLAY,
     href: WHATSAPP_URL,
     external: true,
-  },
-  {
-    icon: Mail,
-    title: 'Email us',
-    body: 'Quotes, documents, and account questions.',
-    action: SITE.email,
-    href: `mailto:${SITE.email}`,
   },
   {
     icon: MessageSquare,
@@ -52,14 +39,15 @@ const CHANNELS = [
   },
 ];
 
-const OFFICES = [
-  { city: 'Chicago, IL', role: 'Headquarters & Midwest hub', detail: '210 Harbor Point Drive, Suite 900' },
-  { city: 'Dallas, TX', role: 'Southern distribution center', detail: '4180 Trinity Freight Way' },
-  { city: 'London, UK', role: 'European operations', detail: '18 Wharfside Court, E14' },
-  { city: 'Rotterdam, Netherlands', role: 'European ocean gateway', detail: 'Waalhaven Terminal, Pier 4' },
-];
+export const dynamic = 'force-dynamic';
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const config = await getWebsiteConfig();
+  const channels = [
+    { icon: Phone, title: 'Call us', body: 'Speak with the team during the published business hours.', action: config.phone, href: `tel:${config.phone.replace(/[^+\d]/g, '')}` },
+    { icon: Mail, title: 'Email us', body: 'Quotes, documents, and account questions.', action: config.email, href: `mailto:${config.email}` },
+    ...BASE_CHANNELS,
+  ];
   return (
     <>
       <PageHero
@@ -76,7 +64,7 @@ export default function ContactPage() {
       <section className="section bg-surface">
         <div className="container">
           <StaggerGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" gap={0.07}>
-            {CHANNELS.map((channel) => (
+            {channels.map((channel) => (
               <RevealItem key={channel.title}>
                 <a
                   href={channel.href}
@@ -112,15 +100,15 @@ export default function ContactPage() {
                   <dl className="mt-4 space-y-2.5 text-[0.95rem]">
                     <div className="flex justify-between gap-4">
                       <dt className="text-ink-500">Sales & quoting</dt>
-                      <dd className="font-medium text-ink-800">Mon–Fri, 07:00–19:00 CT</dd>
+                      <dd className="font-medium text-ink-800">{config.hours}</dd>
                     </div>
                     <div className="flex justify-between gap-4">
                       <dt className="text-ink-500">Dispatch & tracking</dt>
-                      <dd className="font-medium text-ink-800">24 / 7</dd>
+                      <dd className="font-medium text-ink-800">See latest shipment event</dd>
                     </div>
                     <div className="flex justify-between gap-4">
                       <dt className="text-ink-500">Accounts</dt>
-                      <dd className="font-medium text-ink-800">Mon–Fri, 09:00–17:00 CT</dd>
+                      <dd className="font-medium text-ink-800">{config.hours}</dd>
                     </div>
                   </dl>
                 </div>
@@ -133,13 +121,7 @@ export default function ContactPage() {
                     Offices
                   </h2>
                   <ul className="mt-4 divide-y divide-ink-100">
-                    {OFFICES.map((office) => (
-                      <li key={office.city} className="py-3.5 first:pt-0 last:pb-0">
-                        <p className="text-[0.95rem] font-semibold text-ink-900">{office.city}</p>
-                        <p className="text-sm text-ink-500">{office.role}</p>
-                        <p className="mt-0.5 text-sm text-ink-400">{office.detail}</p>
-                      </li>
-                    ))}
+                    <li className="py-3.5 first:pt-0 last:pb-0"><p className="text-[0.95rem] font-semibold text-ink-900">Office address</p><p className="mt-1 text-sm text-ink-500">{config.address}</p></li>
                   </ul>
                 </div>
               </Reveal>
@@ -151,15 +133,14 @@ export default function ContactPage() {
                   </span>
                   <h2 className="mt-5 font-display text-lg font-semibold text-white">Shipment emergency?</h2>
                   <p className="mt-2 text-[0.92rem] leading-relaxed text-ink-300">
-                    For freight already in motion, call dispatch directly — it is the fastest way to reach the person
-                    with the carrier on the other line.
+                    For freight already in motion, call dispatch directly — it is the fastest way to reach the Swiftstream Cargo operations team handling it.
                   </p>
                   <a
-                    href={`tel:${SITE.phone.replace(/[^+\d]/g, '')}`}
+                    href={`tel:${config.phone.replace(/[^+\d]/g, '')}`}
                     className="mt-4 inline-flex items-center gap-2 font-display text-lg font-semibold text-white transition-colors hover:text-brand-300"
                   >
                     <Phone className="h-4 w-4" aria-hidden="true" />
-                    {SITE.phone}
+                    {config.phone}
                   </a>
                 </div>
               </Reveal>

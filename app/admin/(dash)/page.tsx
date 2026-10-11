@@ -1,22 +1,23 @@
-import { AlertTriangle, ArrowRight, CheckCircle2, PackagePlus, Truck } from 'lucide-react';
+import { AlertTriangle, ArrowRight, CheckCircle2, Inbox, PackagePlus, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { adminStatusTone, shipmentStats } from '@/lib/admin';
 import { listShipments } from '@/lib/shipments';
+import { listEnquiries } from '@/lib/operations';
 
 export const metadata = { title: 'Dashboard' };
 
 export default async function AdminDashboardPage() {
-  const shipments = await listShipments();
+  const [shipments, enquiries] = await Promise.all([listShipments(), listEnquiries()]);
   const stats = shipmentStats(shipments);
 
   const cards = [
     { label: 'Open shipments', value: stats.inTransit, icon: Truck, tone: 'text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-500/10' },
     { label: 'Delivered', value: stats.delivered, icon: CheckCircle2, tone: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/10' },
     { label: 'Exceptions', value: stats.exceptions, icon: AlertTriangle, tone: 'text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-500/10' },
-    { label: 'On-time rate', value: `${stats.onTimeRate}%`, icon: CheckCircle2, tone: 'text-ink-700 bg-ink-100' },
+    { label: 'New enquiries', value: enquiries.filter((item) => item.status === 'new').length, icon: Inbox, tone: 'text-ink-700 bg-ink-100' },
   ];
 
-  const attention = shipments.filter((s) => s.status === 'Exception');
+  const attention = shipments.filter((s) => s.status === 'On Hold');
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -119,9 +120,6 @@ export default async function AdminDashboardPage() {
         </ul>
       </section>
 
-      <p className="mt-8 text-xs text-ink-400">
-        This prototype runs against a demo dataset. Figures are illustrative.
-      </p>
     </div>
   );
 }

@@ -51,8 +51,8 @@ function load(filename) {
   return module.exports;
 }
 function request(id, overrides = {}) {
-  return new NextRequest('https://www.freightbridgelogistics.app/api/visitor', {
-    method: 'POST', headers: { origin: 'https://www.freightbridgelogistics.app', 'content-type': 'application/json',
+  return new NextRequest('https://www.swiftstreamcargo.com/api/visitor', {
+    method: 'POST', headers: { origin: 'https://www.swiftstreamcargo.com', 'content-type': 'application/json',
       'user-agent': 'Mozilla/5.0 (Windows NT 10.0) Chrome/130.0 Safari/537.36',
       'x-vercel-forwarded-for': '192.0.2.10', ...overrides.headers },
     body: JSON.stringify({ visitorId: id, page: '/tracking?number=PRIVATE', referrer: 'https://search.example/path?secret=private', ...overrides.body }),
@@ -62,7 +62,7 @@ function reset() { records.clear(); sends = []; failEmail = throwEmail = failAna
 
 async function main() {
   Object.assign(process.env, { RESEND_API_KEY: 'test-not-a-real-key', VISITOR_ALERT_EMAIL: 'owner@example.com',
-    VISITOR_FROM_EMAIL: 'alerts@example.com', NEXT_PUBLIC_SITE_URL: 'https://www.freightbridgelogistics.app', VERCEL: '1', VERCEL_ENV: 'production' });
+    VISITOR_FROM_EMAIL: 'alerts@example.com', NEXT_PUBLIC_SITE_URL: 'https://www.swiftstreamcargo.com', VERCEL: '1', VERCEL_ENV: 'production' });
   const { POST } = load(path.join(root, 'app/api/visitor/route.ts'));
   const helpers = load(path.join(root, 'lib/visitor.ts'));
   const { reserveVisitor } = load(path.join(root, 'lib/visitor-server.ts'));

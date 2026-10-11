@@ -8,7 +8,7 @@ import { getSession } from '@/lib/session';
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: { default: 'Operations', template: '%s | FreightBridge Logistics Ops' },
+  title: { default: 'Operations', template: '%s | Swiftstream Cargo Ops' },
   robots: { index: false, follow: false },
 };
 

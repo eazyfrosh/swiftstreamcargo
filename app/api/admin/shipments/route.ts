@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { carrierNumberClash, createShipmentFromBooking, validateBooking } from '@/lib/shipments';
 import { getSession } from '@/lib/session';
+import { writeAudit } from '@/lib/operations';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -44,6 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: created.error }, { status });
     }
 
+    await writeAudit(session.email, 'shipment.created', created.shipment.trackingNumber);
     return NextResponse.json({
       ok: true,
       trackingNumber: created.shipment.trackingNumber,

@@ -23,7 +23,7 @@ export function WhatsAppButton() {
       href={WHATSAPP_URL}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Message FreightBridge Logistics customer service on WhatsApp"
+      aria-label="Message Swiftstream Cargo customer service on WhatsApp"
       className={cn(
         'no-print fixed bottom-5 right-[5.5rem] z-[60] inline-flex h-14 w-14 items-center justify-center rounded-full',
         // WhatsApp green with a dark glyph, the same fill-and-dark-mark

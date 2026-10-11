@@ -10,6 +10,8 @@
    */
   :root {
     --header-height: 72px;
+    --font-inter: "Segoe UI", Arial, sans-serif;
+    --font-display: "Arial Narrow", "Segoe UI", Arial, sans-serif;
     color-scheme: light;
 
     /**
@@ -17,7 +19,7 @@
      *
      * Declared here so anything themed still renders correctly outside a
      * `CarrierThemeScope` — a component that reads `--carrier-primary` with no
-     * scope above it gets FreightBridge orange rather than nothing.
+     * scope above it gets Swiftstream orange rather than nothing.
      */
     --carrier-primary: #ff6a00;
     --carrier-secondary: #9c3800;
@@ -212,7 +214,7 @@
 @layer components {
   /**
    * Carrier livery transitions when the colours change — navigating from a
-   * FedEx shipment to a UPS one animates rather than snapping.
+   * Theme changes animate rather than snapping.
    */
   .carrier-theme {
     transition:

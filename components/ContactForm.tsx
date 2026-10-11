@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2, Loader2, Send } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { EASE_PREMIUM } from '@/lib/motion';
-import { sleep } from '@/lib/utils';
 import { Button } from './ui/Button';
 import { SelectField, TextAreaField, TextField } from './ui/Field';
 import { useReducedMotion } from '@/lib/use-reduced-motion';
@@ -55,6 +54,9 @@ export function ContactForm() {
   const [submitted, setSubmitted] = useState(false);
   const [pending, setPending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [serverError, setServerError] = useState('');
+  const [reference, setReference] = useState('');
+  const [startedAt] = useState(() => Date.now());
   const formRef = useRef<HTMLFormElement>(null);
   const reduced = useReducedMotion();
 
@@ -79,9 +81,18 @@ export function ContactForm() {
     }
 
     setPending(true);
-    await sleep(1100);
-    setPending(false);
-    setSent(true);
+    setServerError('');
+    try {
+      const response = await fetch('/api/enquiries', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'contact', ...values, startedAt, website: '' }),
+      });
+      const data = await response.json().catch(() => ({})) as { error?: string; reference?: string };
+      if (!response.ok) { setServerError(data.error ?? 'Could not send your message.'); return; }
+      setReference(data.reference ?? '');
+      setSent(true);
+    } catch { setServerError('Could not reach the server. Check your connection and try again.'); }
+    finally { setPending(false); }
   }
 
   return (
@@ -100,9 +111,9 @@ export function ContactForm() {
           </span>
           <h2 className="mt-6 font-display text-2xl font-semibold text-ink-900">Message received</h2>
           <p className="mx-auto mt-3 max-w-md text-[0.98rem] leading-relaxed text-ink-500">
-            Thanks, {values.name.split(' ')[0]}. A FreightBridge Logistics specialist will reply to {values.email} shortly —
-            usually within one business hour.
+            Thanks, {values.name.split(' ')[0]}. Your message is stored for the operations team, who can reply to {values.email}.
           </p>
+          {reference && <p className="mt-3 font-mono text-sm text-ink-500">Reference {reference}</p>}
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Button
               variant="secondary"
@@ -131,6 +142,7 @@ export function ContactForm() {
           exit={{ opacity: 0 }}
           className="rounded-4xl border border-ink-100 bg-surface p-6 shadow-card sm:p-8 lg:p-10"
         >
+          <div className="sr-only" aria-hidden="true"><label htmlFor="contact-website">Website</label><input id="contact-website" name="website" tabIndex={-1} autoComplete="off" /></div>
           <h2 className="font-display text-2xl font-semibold tracking-[-0.02em] text-ink-900">Send us a message</h2>
           <p className="mt-2 text-[0.95rem] text-ink-500">
             Tell us what you need and we will route it to the right specialist.
@@ -207,6 +219,7 @@ export function ContactForm() {
               )}
             </Button>
           </div>
+          {serverError && <p role="alert" className="mt-4 text-sm text-rose-600 dark:text-rose-300">{serverError}</p>}
         </motion.form>
       )}
     </AnimatePresence>

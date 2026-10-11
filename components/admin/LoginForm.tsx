@@ -125,7 +125,7 @@ export function LoginForm() {
           value={email}
           onChange={(event) => setEmail(event.target.value)}
           className="mt-1.5 h-12 w-full rounded-xl border border-ink-700 bg-night-900 px-4 text-[0.95rem] text-white placeholder:text-ink-500 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40"
-          placeholder="ops@freightbridge.com"
+          placeholder="ops@swiftstreamcargo.com"
         />
       </div>
 

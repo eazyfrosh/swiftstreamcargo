@@ -1,8 +1,8 @@
-# FreightBridge Logistics
+# Swiftstream Cargo
 
-**Move Freight. Build Connections.**
+**Cargo in Motion. Confidence at Every Mile.**
 
-A production-quality marketing site for FreightBridge Logistics, a modern freight
+A production-quality marketing site for Swiftstream Cargo, a modern freight
 and supply chain company. Built with Next.js App Router, TypeScript, Tailwind CSS, Framer Motion, and
 Lucide icons.
 
@@ -31,7 +31,7 @@ app/
   (site)/                       PUBLIC marketing site
     layout.tsx                  navbar + footer chrome
     page.tsx                    home page composition
-    tracking/                   shipment tracking (accepts ?number=FBX-...)
+    tracking/                   shipment tracking (accepts ?number=SSC-...)
     quote/                      short quote enquiry (booking lives in admin)
     services/                   services + solutions by industry
     about/                      company, timeline, careers, partners
@@ -50,7 +50,7 @@ app/
   not-found.tsx, sitemap.ts, robots.ts
 middleware.ts                   blocks unauthenticated /admin requests
 components/
-  Navbar, Hero, TrackingWidget, Services, WhyFreightBridge, HowItWorks,
+  Navbar, Hero, TrackingWidget, Services, WhySwiftstream, HowItWorks,
   QuoteLeadForm, GlobalNetwork, EnterpriseSection, TechnologySection,
   Testimonials, CTA, Footer, PageHero, ContactForm, Accordion, LegalArticle,
   ShowcaseCarousel, NetworkStory, RoadFeature
@@ -72,6 +72,16 @@ firestore.rules                 denies all client access (server-only reads)
 firebase.json, .firebaserc      emulator configuration
 public/images/                  original SVG freight illustrations
 ```
+
+## Deploying to Vercel
+
+1. Import the repository as the Vercel project root and keep the framework preset on Next.js.
+2. Add every required value from `.env.example` in **Project Settings → Environment Variables**. Set the Firebase service account only for server environments; never prefix it with `NEXT_PUBLIC_`.
+3. Set `NEXT_PUBLIC_SITE_URL` to the final HTTPS domain, then deploy. Public Firebase values are compiled into the browser bundle, so redeploy after changing them.
+4. In Firebase, add the Vercel domain and the final custom domain under **Authentication → Settings → Authorized domains**.
+5. Deploy the repository rules with `firebase deploy --only firestore:rules` and run `npm run doctor` locally with the production environment values before launch.
+
+External configuration still required: a Firebase project with Email/Password Authentication and Firestore, a server service account, at least one manually provisioned operator included in `ADMIN_EMAILS`, and the final public domain. Resend and visitor alerts are optional and remain disabled when their keys are absent.
 
 ## Admin section
 
@@ -208,8 +218,9 @@ returns null rather than pretending, and sign-in returns 503.
 
 ### What this is not
 
-A single operator account, created by hand in the console. There is no signup,
-no password reset flow, no MFA, no roles and no audit trail. Firebase gives you
+There is no public signup, in-app password reset, or multi-tier role editor. Admin access is an explicit
+server-side email allowlist and important shipment, enquiry, and settings changes are written to the
+Firestore `auditLog` collection. Firebase gives you
 all of those; none are wired up here.
 
 A booking stores the customer's name, email, phone and company on the shipment,
@@ -219,7 +230,7 @@ number is the only credential the public lookup asks for, so anyone who guesses
 one must not thereby learn who the shipment belongs to. A future `...shipment`
 spread into the public response fails to compile.
 
-Tracking numbers are random eight-digit `FBX-` references written with
+Tracking numbers are hard-to-guess 12-digit `SSC-` references written with
 Firestore's `create()`, so a collision fails rather than overwriting an
 existing consignment; the allocator retries.
 
@@ -232,11 +243,10 @@ list. To retire the demo data, delete the entries from
 
 ## Prototype behaviour
 
-This is a front-end prototype: there is no backend.
+The application uses Next.js server routes with Firebase Authentication and Firestore.
 
 - **Tracking** calls `GET /api/tracking`, which reads Firestore server-side for
-  our own numbers and identifies other carriers' from the number's format (see
-  Multi-carrier tracking below). Seven milestones: Pending, Order Confirmed,
+  Swiftstream Cargo numbers only. Seven milestones: Pending, Order Confirmed,
   Picked Up, In Transit, Customs Clearance, Out for Delivery, Delivered.
   Every booking starts at Pending: raising one records the request, and a
   person still has to accept it. Nothing has to climb the whole ladder,
@@ -258,10 +268,9 @@ This is a front-end prototype: there is no backend.
   carry an absolute timestamp (`at`), unlike the fixtures' relative `hoursAgo`,
   and the timeline sorts chronologically so a late-arriving depot scan lands in
   the right place rather than on the end.
-- **Booking is real, and multi-carrier.** `/admin/book` creates a shipment in
-  Firestore as Pending, and allocates an `FBX-` tracking number that works on
-  the public tracking page immediately, on our own network or on FedEx, UPS, USPS, DHL and
-  the rest (see Booking onto another carrier below). It is staff-only; the
+- **Booking is real and Swiftstream-only.** `/admin/book` creates a shipment in
+  Firestore as Pending, and allocates an `SSC-` tracking number that works on
+  the public tracking page immediately on the Swiftstream Cargo network. It is staff-only; the
   public `/quote` page remains a short enquiry that transmits nothing.
 - **Quote and contact forms** validate fully client-side and show a success
   state; nothing is transmitted.
@@ -273,227 +282,11 @@ This is a front-end prototype: there is no backend.
 - **Statistics and dashboard figures** are demonstration values, labelled as
   such on the page.
 
-## Multi-carrier tracking
+## Swiftstream-only shipment and tracking
 
-The tracking box takes a FedEx, UPS, USPS, DHL, Royal Mail, Canada Post, DPD,
-GLS or TNT number as readily as one of ours, and works out which carrier it
-belongs to from the number itself. Nobody has to pick from a dropdown.
+Swiftstream Cargo is the only shipment network exposed by the platform. Admin bookings always use a Swiftstream service and receive a hard-to-guess `SSC-` reference. Public tracking accepts that reference, reads the matching Firestore shipment through a server route, and shows only the events stored by the operations team.
 
-**Detection is by format, then confirmed by check digit.** `lib/carriers.ts`
-holds the registry: patterns, a deep link, and — where the carrier publishes a
-scheme — a verifier. UPS `1Z` numbers, USPS mod-10, FedEx's 12-digit mod-11 and
-the UPU S10 format used for international post all carry one.
-
-**Checksums rank, they never reject.** A number whose pattern matches but whose
-check digit fails is still offered, just below one that verifies. Carriers issue
-numbers that fail their own published scheme more often than you would like, and
-turning away a real consignment is a worse failure than showing a second
-candidate. When several formats fit — `9400…` is both USPS and, differently
-spaced, other things — the alternatives are listed under the best guess.
-
-**Both references open the same page.** A shipment booked onto FedEx carries
-two: `FBX-…`, our document id, and FedEx's, which is what is printed on the
-label and what the customer is most likely holding. Either resolves to the same
-timeline. A platform that only recognised its own reference would make the
-customer find the right piece of paper first.
-
-**Nothing links out to a carrier's site.** This is where its shipments are
-tracked; bouncing a customer to fedex.com mid-journey is the behaviour the
-platform exists to replace. A carrier number we do not hold is a plain
-not-found — unless `TRACKING_API_KEY` is set, in which case that carrier's scan
-events render here too. The one exception is the admin shipment page, where
-staff chasing a real consignment get a lookup link, and never for a reference
-we allocated ourselves.
-
-Carrier numbers are not enforced unique — an operator can paste the same one
-onto two shipments. Doing so warns them, naming the other shipment, and until
-it is corrected the lower tracking number wins, so a customer at least gets the
-same answer every time instead of whichever document the query returned first.
-
-`lib/multi-tracking.ts` talks to a Ship24-shaped tracker API — one POST, one
-bearer token, one normalised response across carriers. Registering with each
-carrier separately is the alternative: every one has its own OAuth flow and its
-own approval queue, which is a project rather than a feature. Swapping vendors
-means rewriting `fetchProviderEvents()` and nothing else.
-
-**A provider outage degrades to not-found rather than hanging.**
-`fetchProviderEvents` returns null on any failure — non-200, malformed body, or
-the 8-second timeout. Our own shipments never touch it, so an outage cannot
-affect them.
-
-Our own `FBX-` numbers are resolved from Firestore and never sent to a provider.
-A number shaped like ours but not on our books comes back as not found, rather
-than being handed to a carrier that never issued it.
-
-**Caveat on the provider path:** the Ship24 adapter has been verified against a
-stub that replays the documented response shape, not against the live service —
-the same situation as Resend. The request and response handling are exercised;
-the vendor's real payload is not. Expect to check the field names on first
-connection.
-
-## Booking onto another carrier
-
-Tracking recognises other carriers' numbers after the fact. This is the other
-half: at booking, `/admin/book` asks which platform the freight is going on —
-our own network, FedEx, UPS, USPS, DHL Express, Royal Mail, Canada Post, DPD,
-GLS or TNT — and then which of that carrier's services.
-
-**The service list is the carrier's own products**, not a generic
-economy/standard/express tier: UPS 2nd Day Air, FedEx Priority Overnight, USPS
-Ground Advantage. Each carries its published transit time, and the promised
-delivery date is collection plus that, so changing carrier changes the ETA
-correctly.
-
-**Carriers are filtered by what they can actually take.** Choose Container and
-only our own network is offered, because USPS will not move one. Switching
-shipment type to something the selected carrier cannot handle moves the booking
-back to our network rather than leaving an impossible pairing on screen for the
-server to reject.
-
-**Two modes, and the platform is useful in both.**
-
-- Without `SHIPPING_API_KEY` — the operator books the freight on the carrier's
-  own platform and records their tracking number here, at booking or later from
-  the shipment page. No credentials, works on deploy, and it is how most small
-  brokers actually operate.
-- With one — the carrier is tendered at booking through a multi-carrier
-  shipping API, and their tracking number and label come back automatically.
-
-**A failed tender never loses the booking.** If the carrier refuses or the
-aggregator is down, the shipment is still created and the operator is told to
-add the number by hand. The provider is called once, outside the
-tracking-number retry loop, and not at all for our own network or for freight
-the operator has already booked with the carrier themselves.
-
-**One shipment, two numbers.** The customer tracks with the `FBX-` reference
-throughout; when the freight is on somebody else's network the tracking page
-shows a "Moving with FedEx on 390244306428" strip, and that number tracks here
-too. The shipping label stays operator-only — it carries both addresses, and `TrackingResult`
-omits it by type, the same protection the customer record has.
-
-**A carrier reference is allocated at booking if none exists.** Off-network
-bookings used to sit with a blank where their reference should be until someone
-typed one in. Now, in order of authority: the provider's number if a shipping
-API answered, otherwise whatever the operator typed, otherwise one we allocate
-in that carrier's own format — `1Z` with a valid UPS check digit, twelve digits
-that satisfy FedEx's mod-11, a `9400…` USPS barcode that passes mod-10.
-
-Those are placeholders and are recorded as such in `carrierNumberSource`. The
-distinction is load-bearing rather than bookkeeping: a generated number is
-shown, but never linked to the carrier, never described as "UPS reference X" in
-the customer's timeline, and flagged in the admin panel as ours to replace. An
-operator editing another field and posting the same number back does not
-promote it — only a *different* number counts as the carrier's own.
-
-Generated numbers round-trip through our own detector as verified matches,
-which is the point of building them from the real check-digit algorithms
-instead of a random string. Two of them cannot: GLS issues 11-digit numbers and
-so does DHL Express, and TNT's 9 digits collide with UPS, so those come back as
-candidates rather than top guesses. Real numbering plans overlap that way; the
-tracking page lists the alternatives.
-
-**Re-tendering is a first-class action**, not a workaround: change the platform
-on the shipment page and the service, the carrier's number, the displayed
-carrier and the service string all follow. What already happened stays in the
-scan history — the booking event still records the carrier it was originally
-tendered to, because it was.
-
-### Carrier logos
-
-Drop a file into `public/carriers/` named after the carrier's id — `ups.svg`,
-`fedex.svg`, `usps.png` — and it appears everywhere that carrier is shown: the
-booking form, the shipment page, the tracking result, the "carriers we
-recognise" list. There is no code change and no list to keep in step;
-`public/carriers/README.md` has the filenames and the artwork notes.
-
-Carriers with no file show their initials on a dark tile, which is what the
-site does today, so logos can be added one at a time. That fallback is the
-reason the folder is read from disk (`lib/carrier-logos.ts`, cached for the
-process) rather than each carrier declaring a path: a hardcoded
-`/carriers/ups.svg` would 404 on every page load until someone added the file.
-
-Logos sit on a white tile in both themes. Carrier marks are fixed-colour
-artwork drawn for white — UPS's shield, FedEx's wordmark, USPS's eagle all
-fringe or vanish on a dark ground, and there is no inverted variant to switch
-to. They carry an empty `alt` because the carrier's name is always in text
-beside them.
-
-Ten are in the tree: UPS, FedEx, USPS, DHL (Express and eCommerce share the
-mark), Royal Mail, Canada Post, DPD, GLS and TNT. Our own network keeps its
-`FB` tile, and "International post" is a format rather than a company, so it
-has none. These are other companies' trademarks — replace any of them with the
-official asset from that carrier's brand page if you have it, and keep to their
-usage guidelines.
-
-Each file's `viewBox` has been cropped to the tight bounding box of its
-artwork, and full-canvas white background plates dropped, by measuring
-`getBBox()` in a browser rather than guessing. Source logos come with wildly
-different canvases — DHL's wordmark arrived inside a 567×567 square, which drew
-about 5px tall on a 16px tile and read as a smear. Anything you add later is
-worth passing through the same crop.
-
-### Email placeholders
-
-`{{carrierTrackingNumber}}` and `{{carrierTrackingUrl}}` are available to email
-templates. No shipped template uses them; add them to the wording if you want
-the carrier's own reference in customer email.
-
-**Caveat, as with tracking:** the shipping adapter has been verified against a
-stub replaying the documented shape, never against a live aggregator. The
-request/response handling is exercised; the vendor's real field names are not.
-Every aggregator differs — the larger ones need a rate selected before a label
-exists — so treat `tenderShipment()` as the seam to adapt, not a finished
-integration.
-
-### The tracking result
-
-Laid out to match the operator's own multi-carrier platform: a header card in
-the carrier's livery, a progress bar and last-known location, a route overview,
-then history beside a details column, with copy-link, print and a QR code.
-
-**The livery is data, not classes.** `lib/carrier-themes.ts` holds two hex
-values per carrier and derives the rest; `CarrierThemeScope` publishes them as
-`--carrier-primary` and friends. Readable text on each colour is computed from
-WCAG relative luminance rather than hand-picked, so adding a carrier needs only
-its two brand colours — which matters when DHL yellow and UPS gold need black
-text while USPS blue needs white. `:root` declares the same variables with
-FreightBridge orange, so anything themed still renders correctly outside a
-scope, and a shipment on our own network wears our livery rather than none.
-
-**The route overview is not a map**, and is not called one. A real map needs a
-geocode for every scan location and a tile provider on every page load; what a
-customer wants to know — how far along, where last seen — the checkpoint line
-answers without either. Only scans that have happened are plotted.
-
-**One deliberate departure from the reference design.** Its details card names
-the sender and the receiver. Ours shows the consignment instead — lane, pieces,
-weight, dimensions. A tracking number is the only credential for this page, and
-`TrackingResult` omits the customer record by type precisely so that guessing a
-number cannot yield somebody's name and address.
-
-Printing drops the site chrome, the page's own controls and the QR panel, forces
-the livery header to print (browsers drop backgrounds by default, which would
-leave white text on white paper), and collapses to one column.
-
-The QR encoder is imported on demand, so the only visitors who download it are
-those who found a shipment.
-
-### Reaching a person
-
-Two floating buttons, bottom right on every public page: WhatsApp and live
-chat. Same size, shape and elevation, twelve pixels apart, so they read as one
-pair of ways to reach somebody rather than two unrelated widgets.
-
-WhatsApp sits to the *left* rather than stacked above, because the chat panel
-opens upward and would bury a stacked button the moment a conversation started.
-It also renders unconditionally, unlike the chat launcher, which hides itself
-when the server cannot store conversations — WhatsApp needs nothing from us,
-which matters most exactly when chat is down.
-
-The bubble is WhatsApp green with a dark glyph, matching the chat bubble's
-fill-and-dark-mark treatment. The familiar white-on-green sits at about 1.9:1,
-well under the 3:1 a graphical element needs.
-
+Legacy `FBX-` references created before the rebrand remain readable so existing shipment records are not stranded. Third-party carrier selection, number detection, provider links, external tracking APIs, and automated carrier tendering are intentionally not part of this deployment.
 ## Live chat
 
 Visitors chat from a bubble on every public page; operators reply at
@@ -671,7 +464,7 @@ Reusable text/layout classes (`.section`, `.display-1`, `.display-2`, `.lead`,
 `from="left" | "right" | "up"` prop, which is how the editorial sections
 alternate their entrance direction.
 
-`ShowcaseCarousel` is the slideshow between Services and Why FreightBridge Logistics:
+`ShowcaseCarousel` is the slideshow between Services and Why Swiftstream Cargo:
 autoplaying, drag/swipe, arrow-key navigable, with a progress bar on the active
 dot and a pause control. Autoplay stops on hover and on focus, and never starts
 under `prefers-reduced-motion`.
@@ -712,7 +505,7 @@ video: {
   src: '/video/hero-freight.mp4',
   webm: '',                            // optional, served first when present
   poster: '/images/hero-freight.jpg',  // shown while the clip loads
-  description: 'Freight moving through a FreightBridge Logistics distribution network',
+  description: 'Freight moving through a Swiftstream Cargo distribution network',
 },
 ```
 

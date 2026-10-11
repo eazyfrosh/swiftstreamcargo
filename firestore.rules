@@ -60,6 +60,11 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    match /enquiries/{entryId} { allow read, write: if false; }
+    match /publicFormRateLimits/{entryId} { allow read, write: if false; }
+    match /auditLog/{entryId} { allow read, write: if false; }
+    match /settings/{entryId} { allow read, write: if false; }
+
     match /{document=**} {
       allow read, write: if false;
     }

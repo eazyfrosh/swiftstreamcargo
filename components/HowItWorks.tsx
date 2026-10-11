@@ -30,7 +30,7 @@ const STEPS = [
   {
     number: '04',
     title: 'Delivered',
-    copy: 'Your freight arrives safely and on schedule.',
+    copy: 'The final delivery event is recorded on the shipment timeline.',
     icon: PackageCheck,
   },
 ];
@@ -46,7 +46,7 @@ export function HowItWorks() {
           align="center"
           title={
             <>
-              Moving freight is easier <span className="text-brand-600 dark:text-brand-300">with FreightBridge Logistics.</span>
+              Moving freight is easier <span className="text-brand-600 dark:text-brand-300">with Swiftstream Cargo.</span>
             </>
           }
           description="Four steps from first quote to proof of delivery — with a named logistics specialist on every one of them."

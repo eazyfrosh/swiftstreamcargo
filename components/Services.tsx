@@ -76,7 +76,7 @@ export function Services() {
                 </ul>
 
                 <Link
-                  href={`/services#${service.slug}`}
+                  href={`/services/${service.slug}`}
                   className="mt-auto inline-flex items-center gap-1.5 pt-6 text-[0.95rem] font-semibold text-ink-900 transition-colors duration-300 hover:text-brand-700 dark:hover:text-brand-300 focus-visible:text-brand-700 dark:focus-visible:text-brand-300"
                 >
                   <span className="relative">

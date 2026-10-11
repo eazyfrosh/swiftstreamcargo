@@ -1,4 +1,5 @@
 import 'server-only';
+import { randomInt } from 'crypto';
 
 import {
   OWN_CARRIER_ID,
@@ -43,7 +44,7 @@ function warnOnce() {
   if (warned || process.env.NODE_ENV === 'test') return;
   warned = true;
   console.warn(
-    '[freightbridge] Firebase is not configured — serving seed shipment fixtures. ' +
+    '[swiftstream] Firebase is not configured — serving seed shipment fixtures. ' +
       'Set FIREBASE_SERVICE_ACCOUNT_KEY to read from Firestore.',
   );
 }
@@ -57,6 +58,7 @@ function toShipment(data: FirebaseFirestore.DocumentData | undefined): Shipment 
 
   return {
     trackingNumber,
+    archived: data.archived === true,
     status: status as ShipmentStatus,
     service: typeof data.service === 'string' ? data.service : '',
     origin,
@@ -81,6 +83,8 @@ function toShipment(data: FirebaseFirestore.DocumentData | undefined): Shipment 
     createdAt: typeof data.createdAt === 'string' ? data.createdAt : null,
     events: Array.isArray(data.events) ? data.events : [],
     customer: toCustomer(data.customer),
+    sender: toCustomer(data.sender),
+    recipient: toCustomer(data.recipient ?? data.customer),
     pickupDate: typeof data.pickupDate === 'string' ? data.pickupDate : null,
   };
 }
@@ -138,7 +142,7 @@ export async function listShipments(): Promise<Shipment[]> {
     (fixture) => !storedNumbers.has(fixture.trackingNumber.toUpperCase()),
   );
 
-  return sortNewestFirst([...stored, ...remainingFixtures]);
+  return sortNewestFirst([...stored, ...remainingFixtures].filter((shipment) => !shipment.archived));
 }
 
 /**
@@ -179,7 +183,10 @@ export async function findShipment(trackingNumber: string): Promise<Shipment | n
   // The tracking number is the document id, so this is a point read rather
   // than a query — no index, and no scan proportional to collection size.
   const doc = await db.collection(COLLECTION).doc(wanted).get();
-  if (doc.exists) return toShipment(doc.data());
+  if (doc.exists) {
+    const shipment = toShipment(doc.data());
+    return shipment?.archived ? null : shipment;
+  }
 
   return SEED_SHIPMENTS.find((s) => s.trackingNumber.toUpperCase() === wanted) ?? null;
 }
@@ -187,7 +194,7 @@ export async function findShipment(trackingNumber: string): Promise<Shipment | n
 /**
  * Find one of ours by the *carrier's* number rather than our own.
  *
- * A shipment booked onto FedEx carries two references: `FBX-…`, which is the
+ * A shipment booked onto FedEx carries two references: `SSC-…`, which is the
  * document id, and FedEx's, which is what is printed on the label and what the
  * customer is most likely holding. Both have to resolve to the same timeline —
  * a platform that only recognises its own reference makes the customer find
@@ -276,7 +283,7 @@ export interface ShipmentPatch {
   carrierNumberSource: Shipment['carrierNumberSource'];
 }
 
-export const SHIPMENT_STATUSES: ShipmentStatus[] = [...TRACKING_STAGES, 'Exception'];
+export const SHIPMENT_STATUSES: ShipmentStatus[] = [...TRACKING_STAGES];
 
 const MAX_TEXT = 120;
 const MAX_DESCRIPTION = 400;
@@ -572,6 +579,10 @@ export interface BookingInput {
   businessName: string;
   email: string;
   phone: string;
+  senderName: string;
+  senderBusinessName: string;
+  senderEmail: string;
+  senderPhone: string;
 }
 
 export function validateBooking(
@@ -590,6 +601,8 @@ export function validateBooking(
     ['weight', 'Weight'],
     ['name', 'Contact name'],
     ['phone', 'Phone number'],
+    ['senderName', 'Sender name'],
+    ['senderPhone', 'Sender phone number'],
   ];
 
   const values: Record<string, string> = {};
@@ -621,6 +634,8 @@ export function validateBooking(
 
   const email = typeof raw.email === 'string' ? raw.email.trim().toLowerCase() : '';
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: 'Enter a valid email address.' };
+  const senderEmail = typeof raw.senderEmail === 'string' ? raw.senderEmail.trim().toLowerCase() : '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(senderEmail)) return { error: 'Enter a valid sender email address.' };
 
   const pieces = count(raw.pieces, 1, 100_000);
   if (pieces === null) return { error: 'Pieces must be a whole number of at least 1.' };
@@ -652,15 +667,19 @@ export function validateBooking(
       businessName: text(raw.businessName) ?? '',
       email,
       phone: values.phone,
+      senderName: values.senderName,
+      senderBusinessName: text(raw.senderBusinessName) ?? '',
+      senderEmail,
+      senderPhone: values.senderPhone,
     },
     warning: assignment.warning,
   };
 }
 
-/** `FBX-` plus eight digits, matching what the public lookup accepts. */
+/** `SSC-` plus 12 cryptographically generated digits (about 40 bits of search space). */
 function candidateTrackingNumber(): string {
-  const digits = Math.floor(10_000_000 + Math.random() * 90_000_000);
-  return `FBX-${digits}`;
+  const digits = randomInt(100_000_000_000, 1_000_000_000_000);
+  return `SSC-${digits}`;
 }
 
 /** Whole days from today to `date`, floored at zero. */
@@ -697,7 +716,7 @@ function shipmentFromBooking(
     // person still has to commit to it, and the first thing an operator does
     // on the shipment page is move it on.
     service: `${booking.shipmentType} · ${serviceName}`,
-    status: 'Pending',
+    status: 'Shipment Created',
     origin,
     destination,
     currentLocation: origin,
@@ -707,7 +726,7 @@ function shipmentFromBooking(
     pieces: booking.pieces,
     weight: booking.weight,
     dimensions: booking.dimensions,
-    carrier: carrier?.name ?? 'FreightBridge Logistics',
+    carrier: carrier?.name ?? 'Swiftstream Cargo',
     carrierId: booking.carrierId,
     carrierService: booking.carrierService,
     carrierTrackingNumber: carrierTrackingNumber || null,
@@ -721,9 +740,11 @@ function shipmentFromBooking(
       phone: booking.phone,
       company: booking.businessName,
     } satisfies ShipmentCustomer,
+    recipient: { name: booking.name, email: booking.email, phone: booking.phone, company: booking.businessName },
+    sender: { name: booking.senderName, email: booking.senderEmail, phone: booking.senderPhone, company: booking.senderBusinessName },
     events: [
       {
-        stage: 'Pending',
+        stage: 'Shipment Created',
         title: 'Booking received',
         location: origin,
         description: `${booking.pieces} ${booking.shipmentType.toLowerCase()}${

@@ -3,7 +3,7 @@ import { LegalArticle } from '@/components/LegalArticle';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'How FreightBridge Logistics collects, uses, and protects the information you share when requesting a quote or tracking a shipment.',
+  description: 'How Swiftstream Cargo collects, uses, and protects the information you share when requesting a quote or tracking a shipment.',
   alternates: { canonical: '/legal/privacy' },
 };
 
@@ -12,7 +12,7 @@ export default function PrivacyPage() {
     <LegalArticle
       breadcrumb="Privacy Policy"
       title="Privacy Policy"
-      intro="What we collect when you use FreightBridge Logistics, why we collect it, and the choices you have."
+      intro="What we collect when you use Swiftstream Cargo, why we collect it, and the choices you have."
       updated="1 January 2026"
       sections={[
         {
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
           heading: 'Your choices',
           paragraphs: [
             'You can request a copy of the information we hold about you, ask us to correct it, or ask us to delete it where we are not required to keep it.',
-            'Email hello@freightbridge.com and we will respond within a reasonable period.',
+            'Email hello@swiftstreamcargo.com and we will respond within a reasonable period.',
           ],
         },
         {

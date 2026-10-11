@@ -28,14 +28,14 @@ const KPIS = [
 ];
 
 const SHIPMENTS = [
-  { id: 'FBX-28473921', lane: 'Chicago → Dallas', status: 'In transit', progress: 62, eta: 'Tomorrow, 08:00' },
-  { id: 'FBX-90112845', lane: 'Manchester → London', status: 'Out for delivery', progress: 88, eta: 'Today, 16:20' },
-  { id: 'FBX-55620174', lane: 'Rotterdam → Madrid', status: 'Delivered', progress: 100, eta: 'Delivered 26h ago' },
-  { id: 'FBX-73004466', lane: 'Jebel Ali → Rotterdam', status: 'Delayed', progress: 44, eta: 'Revised: in 6 days' },
+  { id: 'SSC-28473921', lane: 'Chicago → Dallas', status: 'In transit', progress: 62, eta: 'Tomorrow, 08:00' },
+  { id: 'SSC-90112845', lane: 'Manchester → London', status: 'Out for delivery', progress: 88, eta: 'Today, 16:20' },
+  { id: 'SSC-55620174', lane: 'Rotterdam → Madrid', status: 'Delivered', progress: 100, eta: 'Delivered 26h ago' },
+  { id: 'SSC-73004466', lane: 'Jebel Ali → Rotterdam', status: 'Delayed', progress: 44, eta: 'Revised: in 6 days' },
 ];
 
 const ACTIVITY = [
-  { text: 'POD uploaded for FBX-55620174', time: '12 min ago', icon: Package },
+  { text: 'POD uploaded for SSC-55620174', time: '12 min ago', icon: Package },
   { text: 'Linehaul 214 departed Springfield, MO', time: '1 hour ago', icon: Truck },
   { text: 'Quote FBQ-448210 accepted', time: '3 hours ago', icon: BarChart3 },
   { text: 'New pickup scheduled — Newark, NJ', time: '5 hours ago', icon: Clock4 },
@@ -110,7 +110,7 @@ export function TechnologySection() {
                 </div>
                 <div className="ml-2 hidden items-center gap-2 rounded-lg bg-surface px-3 py-1.5 text-xs text-ink-400 ring-1 ring-ink-100 sm:flex">
                   <Search className="h-3 w-3" aria-hidden="true" />
-                  console.freightbridge.com / shipments
+                  console.swiftstreamcargo.com / shipments
                 </div>
                 <span className="ml-auto rounded-full bg-emerald-50 dark:bg-emerald-500/10 px-2.5 py-1 text-[0.68rem] font-semibold text-emerald-700 dark:text-emerald-300">
                   Live
@@ -279,7 +279,7 @@ export function TechnologySection() {
                       <CircleAlert className="h-4 w-4" aria-hidden="true" />
                     </span>
                     <p className="text-[0.85rem] text-ink-700">
-                      <span className="font-semibold text-ink-900">FBX-73004466</span> — vessel berthing delayed at
+                      <span className="font-semibold text-ink-900">SSC-73004466</span> — vessel berthing delayed at
                       Algeciras. Revised arrival issued, account team notified.
                     </p>
                   </div>

@@ -42,7 +42,7 @@ const THEME_INPUTS: Record<string, ThemeInput> = {
  * Our own brand, and the fallback for any carrier with no entry above.
  *
  * A shipment on our own network is not an absence of livery — it is ours, so
- * the header wears FreightBridge orange exactly as a FedEx one wears purple.
+ * the header wears Swiftstream orange exactly as a FedEx one wears purple.
  */
 const DEFAULT_THEME_INPUT: ThemeInput = { primary: '#FF6A00', secondary: '#9C3800' };
 

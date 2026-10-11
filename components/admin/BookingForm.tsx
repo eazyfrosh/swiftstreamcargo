@@ -1,17 +1,13 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertCircle, ArrowRight, CheckCircle2, Loader2, MapPin, Network, PackageCheck, ShieldCheck, Truck } from 'lucide-react';
+import { AlertCircle, ArrowRight, CheckCircle2, Loader2, MapPin, PackageCheck, ShieldCheck, Truck } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   OWN_CARRIER_ID,
   carrierById,
-  carriersFor,
-  matchesCarrierFormat,
   normalizeCarrierNumber,
-  type CarrierLogos,
 } from '@/lib/carriers';
-import { CarrierLogo } from '../CarrierLogo';
 import { EASE_PREMIUM } from '@/lib/motion';
 import { cn } from '@/lib/utils';
 import { Button } from '../ui/Button';
@@ -57,6 +53,10 @@ interface FormState {
   businessName: string;
   email: string;
   phone: string;
+  senderName: string;
+  senderBusinessName: string;
+  senderEmail: string;
+  senderPhone: string;
 }
 
 type Errors = Partial<Record<keyof FormState, string>>;
@@ -80,6 +80,7 @@ const INITIAL: FormState = {
   businessName: '',
   email: '',
   phone: '',
+  senderName: '', senderBusinessName: '', senderEmail: '', senderPhone: '',
 };
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
@@ -155,23 +156,16 @@ function validate(values: FormState): Errors {
   } else if (!PHONE_PATTERN.test(values.phone.trim())) {
     errors.phone = 'Enter a valid phone number.';
   }
+  if (!values.senderName.trim()) errors.senderName = 'Enter the sender name.';
+  if (!EMAIL_PATTERN.test(values.senderEmail.trim())) errors.senderEmail = 'Enter a valid sender email.';
+  if (!PHONE_PATTERN.test(values.senderPhone.trim())) errors.senderPhone = 'Enter a valid sender phone number.';
 
   return errors;
 }
 
-interface BookingFormProps {
-  className?: string;
-  /**
-   * Whether a multi-carrier shipping API is configured. Connected means the
-   * carrier's number comes back from the booking; manual means the operator
-   * books on the carrier's own platform and records the number here.
-   */
-  fulfilment?: 'connected' | 'manual';
-  /** Carrier id to logo URL. Anything missing falls back to initials. */
-  logos?: CarrierLogos;
-}
+interface BookingFormProps { className?: string; }
 
-export function BookingForm({ className, fulfilment = 'manual', logos = {} }: BookingFormProps) {
+export function BookingForm({ className }: BookingFormProps) {
   const [values, setValues] = useState<FormState>(INITIAL);
   const [errors, setErrors] = useState<Errors>({});
   const [submitted, setSubmitted] = useState(false);
@@ -194,17 +188,7 @@ export function BookingForm({ className, fulfilment = 'manual', logos = {} }: Bo
 
   const errorCount = useMemo(() => Object.keys(errors).length, [errors]);
 
-  const availableCarriers = useMemo(() => carriersFor(values.shipmentType), [values.shipmentType]);
   const carrier = carrierById(values.carrierId);
-  const offNetwork = values.carrierId !== OWN_CARRIER_ID;
-
-  // Shown beside the field, never blocking the booking: our pattern list is
-  // not exhaustive, and an operator holding a real number is a better source
-  // than a regex.
-  const numberLooksWrong =
-    offNetwork &&
-    values.carrierTrackingNumber.trim().length >= 4 &&
-    !matchesCarrierFormat(values.carrierId, values.carrierTrackingNumber);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setValues((current) => {
@@ -216,34 +200,9 @@ export function BookingForm({ className, fulfilment = 'manual', logos = {} }: Bo
     });
   }
 
-  /** Switching platform keeps the service valid: theirs, not the last one's. */
-  function selectCarrier(id: string) {
-    setValues((current) => {
-      const services = carrierById(id)?.services ?? [];
-      const keep = services.some((service) => service.code === current.carrierService);
-      const next = {
-        ...current,
-        carrierId: id,
-        carrierService: keep ? current.carrierService : (services[0]?.code ?? ''),
-        // Their reference belongs to the platform it was issued by.
-        carrierTrackingNumber: id === current.carrierId ? current.carrierTrackingNumber : '',
-      };
-      if (submitted) setErrors(validate(next));
-      return next;
-    });
-  }
-
   function selectShipmentType(type: string) {
     setValues((current) => {
       const next = { ...current, shipmentType: type };
-      // USPS cannot take a 40ft container. Rather than leave an impossible
-      // pairing on screen for the server to reject, fall back to our own
-      // network, which is the one that takes everything.
-      if (!carrierById(current.carrierId)?.handles?.includes(type as never)) {
-        next.carrierId = OWN_CARRIER_ID;
-        next.carrierService = 'fb-standard';
-        next.carrierTrackingNumber = '';
-      }
       if (submitted) setErrors(validate(next));
       return next;
     });
@@ -562,67 +521,17 @@ export function BookingForm({ className, fulfilment = 'manual', logos = {} }: Bo
               </div>
             </div>
 
-            {/* Carrier */}
+            {/* Swiftstream service */}
             <div className="mt-8 border-t border-ink-100 pt-8">
               <h3 className="flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-[0.14em] text-ink-700">
-                <Network className="h-4 w-4 text-brand-600 dark:text-brand-300" aria-hidden="true" />
-                Carrier platform
+                <Truck className="h-4 w-4 text-brand-600 dark:text-brand-300" aria-hidden="true" />
+                Swiftstream Cargo service
               </h3>
               <p className="mt-1.5 text-sm text-ink-500">
-                Who is moving it. Only carriers that take {values.shipmentType.toLowerCase()} freight are
-                offered.
+                Every booking moves through the Swiftstream Cargo network and receives an SSC tracking number.
               </p>
 
-              <fieldset className="mt-5">
-                <legend className="sr-only">Carrier</legend>
-                <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-                  {availableCarriers.map((option) => {
-                    const active = option.id === values.carrierId;
-                    return (
-                      <label
-                        key={option.id}
-                        className={cn(
-                          'flex cursor-pointer items-center gap-3 rounded-2xl border p-3.5 transition-colors',
-                          active
-                            ? 'border-brand-500 bg-brand-50 dark:bg-brand-500/10'
-                            : 'border-ink-200 bg-surface hover:border-ink-300',
-                        )}
-                      >
-                        <input
-                          type="radio"
-                          name="carrierId"
-                          value={option.id}
-                          checked={active}
-                          onChange={() => selectCarrier(option.id)}
-                          className="h-4 w-4 shrink-0 accent-brand-600"
-                        />
-                        <CarrierLogo
-                          src={logos[option.id]}
-                          initials={option.initials}
-                          className={cn(!logos[option.id] && active && 'bg-brand-600 text-white')}
-                        />
-                        <span className="min-w-0">
-                          <span className="block truncate text-[0.95rem] font-medium text-ink-900">
-                            {option.name}
-                          </span>
-                          <span className="block text-xs text-ink-500">
-                            {option.id === OWN_CARRIER_ID
-                              ? 'Our own network'
-                              : `${option.services?.length ?? 0} services`}
-                          </span>
-                        </span>
-                      </label>
-                    );
-                  })}
-                </div>
-                {errors.carrierId && (
-                  <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-300">
-                    {errors.carrierId}
-                  </p>
-                )}
-              </fieldset>
-
-              <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              <div className="mt-5 max-w-md">
                 <SelectField
                   id="carrierService"
                   label="Service"
@@ -638,40 +547,29 @@ export function BookingForm({ className, fulfilment = 'manual', logos = {} }: Bo
                   onChange={(event) => update('carrierService', event.target.value)}
                   error={errors.carrierService}
                 />
-
-                {offNetwork && (
-                  <TextField
-                    id="carrierTrackingNumber"
-                    label={`${carrier?.name ?? 'Carrier'} tracking number`}
-                    placeholder="1Z999AA10123456784"
-                    hint="Optional — leave blank and we allocate one in their format"
-                    value={values.carrierTrackingNumber}
-                    onChange={(event) => update('carrierTrackingNumber', event.target.value)}
-                    error={errors.carrierTrackingNumber}
-                  />
-                )}
               </div>
-
-              {numberLooksWrong && !errors.carrierTrackingNumber && (
-                <p className="mt-3 flex items-start gap-2 text-sm text-amber-700 dark:text-amber-300">
-                  <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-                  That does not look like a {carrier?.name} number. It will be saved as typed — check it
-                  before it goes to the customer.
-                </p>
-              )}
             </div>
 
-            {/* Contact */}
+            {/* Sender and recipient contacts */}
             <div className="mt-8 border-t border-ink-100 pt-8">
               <h3 className="flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-[0.14em] text-ink-700">
                 <ShieldCheck className="h-4 w-4 text-brand-600 dark:text-brand-300" aria-hidden="true" />
-                How we reach you
+                Sender details
               </h3>
+
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <TextField id="senderName" label="Sender name" required value={values.senderName} onChange={(event) => update('senderName', event.target.value)} error={errors.senderName} />
+                <TextField id="senderBusinessName" label="Sender business" hint="Optional" value={values.senderBusinessName} onChange={(event) => update('senderBusinessName', event.target.value)} />
+                <TextField id="senderEmail" label="Sender email" required type="email" value={values.senderEmail} onChange={(event) => update('senderEmail', event.target.value)} error={errors.senderEmail} />
+                <TextField id="senderPhone" label="Sender phone" required type="tel" value={values.senderPhone} onChange={(event) => update('senderPhone', event.target.value)} error={errors.senderPhone} />
+              </div>
+
+              <h3 className="mt-8 flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-[0.14em] text-ink-700">Recipient details</h3>
 
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <TextField
                   id="name"
-                  label="Name"
+                  label="Recipient name"
                   required
                   autoComplete="name"
                   placeholder="Amara Okafor"
@@ -726,12 +624,7 @@ export function BookingForm({ className, fulfilment = 'manual', logos = {} }: Bo
 
             <div className="mt-8 flex flex-col items-start gap-4 border-t border-ink-100 pt-8 sm:flex-row sm:items-center sm:justify-between">
               <p className="max-w-sm text-sm text-ink-400">
-                This creates the shipment and allocates a tracking number the customer can use immediately.
-                {offNetwork &&
-                  (fulfilment === 'connected'
-                    ? ` ${carrier?.name} is tendered automatically and their number is attached.`
-                    : ` With no ${carrier?.name} number given, a placeholder in their format is allocated —` +
-                      ' swap in theirs once the freight is tendered.')}
+                This creates a Swiftstream Cargo shipment and allocates an SSC tracking number the customer can use immediately.
               </p>
               <Button type="submit" size="lg" disabled={pending} className="w-full sm:w-auto">
                 {pending ? (

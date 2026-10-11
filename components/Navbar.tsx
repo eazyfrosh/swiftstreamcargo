@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronDown, Menu, PackageSearch, Phone, X } from 'lucide-react';
+import { ArrowRight, ChevronDown, Clock3, Mail, Menu, PackageSearch, Phone, X } from 'lucide-react';
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NAV_ITEMS, SITE, type NavItem } from '@/lib/site';
@@ -10,8 +10,9 @@ import { ThemeToggle } from './ThemeToggle';
 import { Button } from './ui/Button';
 import { Logo } from './ui/Logo';
 import { useReducedMotion } from '@/lib/use-reduced-motion';
+import type { WebsiteConfig } from '@/lib/operations';
 
-export function Navbar() {
+export function Navbar({ config }: { config: WebsiteConfig }) {
   const [scrolled, setScrolled] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -85,18 +86,19 @@ export function Navbar() {
           shadow and the height shrink, never the colour scheme. */}
       <header
         className={cn(
-          'fixed inset-x-0 top-0 z-50 border-b border-ink-100 bg-surface transition-[box-shadow] duration-500 ease-premium',
+          'fixed inset-x-0 top-0 z-50 bg-night-950 transition-[box-shadow] duration-500 ease-premium',
           scrolled && 'shadow-[0_1px_24px_-12px_rgba(18,18,18,0.4)]',
         )}
       >
+        <div className="hidden bg-brand-600 text-white lg:block"><div className="container flex h-9 items-center justify-between text-xs"><div className="flex items-center gap-6"><a href={`mailto:${config.email}`} className="flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" />{config.email}</a><span className="flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{config.hours}</span></div><div className="flex items-center gap-5"><Link href="/contact">Support</Link><Link href="/tracking">Track now</Link></div></div></div>
         <div className="container">
           <div
             className={cn(
               'flex items-center justify-between gap-6 transition-[height] duration-500 ease-premium',
-              scrolled ? 'h-[68px]' : 'h-[80px]',
+              scrolled ? 'h-[66px]' : 'h-[76px]',
             )}
           >
-            <Logo onClick={closeAll} />
+            <Logo onClick={closeAll} tone="light" name={config.name} />
 
             {/* Desktop navigation */}
             <nav aria-label="Main" className="hidden lg:block" onMouseLeave={scheduleClose}>
@@ -121,7 +123,6 @@ export function Navbar() {
             {/* One action. Tracking is the thing customers come back for —
                 booking now lives in the operations area, not on this site. */}
             <div className="hidden items-center gap-3 lg:flex">
-              <ThemeToggle />
               <Button href="/tracking" size="md" variant="primary" onClick={closeAll}>
                 <PackageSearch className="h-4 w-4" aria-hidden="true" />
                 Track Shipment
@@ -135,7 +136,7 @@ export function Navbar() {
               aria-label="Open menu"
               aria-expanded={mobileOpen}
               aria-controls="mobile-menu"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-ink-200 bg-surface text-ink-800 transition-colors duration-300 hover:bg-ink-50 lg:hidden"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition-colors duration-300 hover:bg-white/10 lg:hidden"
             >
               <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
@@ -171,7 +172,7 @@ export function Navbar() {
               transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="flex h-[80px] items-center justify-between border-b border-ink-100 px-5">
-                <Logo onClick={closeAll} />
+                <Logo onClick={closeAll} name={config.name} />
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
@@ -272,11 +273,11 @@ export function Navbar() {
                 </div>
 
                 <a
-                  href={`tel:${SITE.phone.replace(/[^+\d]/g, '')}`}
+                  href={`tel:${config.phone.replace(/[^+\d]/g, '')}`}
                   className="mt-6 flex items-center gap-2 text-sm font-medium text-ink-500"
                 >
                   <Phone className="h-4 w-4" aria-hidden="true" />
-                  {SITE.phone}
+                  {config.phone}
                 </a>
               </nav>
             </motion.div>
@@ -298,8 +299,8 @@ interface DesktopNavItemProps {
 
 function DesktopNavItem({ item, open, reduced, onOpen, onToggle, onClose }: DesktopNavItemProps) {
   const linkClasses = cn(
-    'inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[0.95rem] font-medium text-ink-600 transition-colors duration-300 hover:bg-ink-50 hover:text-ink-900',
-    open && 'bg-ink-50 text-ink-900',
+    'inline-flex items-center gap-1.5 px-3.5 py-2 text-[0.95rem] font-medium text-white/80 transition-colors duration-300 hover:text-white',
+    open && 'text-white',
   );
 
   if (!item.children) {

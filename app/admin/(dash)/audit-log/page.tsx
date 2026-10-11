@@ -1,0 +1,5 @@
+import { listAuditLog } from '@/lib/operations';
+
+export const dynamic = 'force-dynamic';
+export const metadata = { title: 'Audit log' };
+export default async function AuditLogPage() { const entries = await listAuditLog(); return <div className="mx-auto max-w-6xl"><h1 className="font-display text-3xl font-semibold text-ink-900">Audit log</h1><p className="mt-2 text-ink-500">A chronological record of important operator changes.</p>{entries.length === 0 ? <div className="mt-8 rounded-2xl border border-dashed border-ink-200 p-10 text-center text-ink-500">No audit entries yet.</div> : <div className="mt-8 overflow-hidden rounded-2xl border border-ink-200 bg-surface"><ul className="divide-y divide-ink-100">{entries.map((entry) => <li key={entry.id} className="grid gap-2 p-5 sm:grid-cols-[12rem_1fr_12rem]"><time className="text-xs text-ink-400">{new Date(entry.at).toLocaleString()}</time><div><p className="font-medium text-ink-900">{entry.action}</p><p className="text-sm text-ink-500">{entry.target}{entry.details ? ` · ${entry.details}` : ''}</p></div><p className="truncate text-sm text-ink-500">{entry.actor}</p></li>)}</ul></div>}</div>; }

@@ -1,4 +1,4 @@
-import { detectCarriers, isFreightBridgeNumber, normalizeCarrierNumber } from './carriers';
+import { isSwiftstreamNumber } from './carriers';
 import { SEED_SHIPMENTS } from './fixtures/shipments';
 
 /**
@@ -26,18 +26,18 @@ import { SEED_SHIPMENTS } from './fixtures/shipments';
  * has to climb.
  */
 export const TRACKING_STAGES = [
-  'Pending',
-  'Order Confirmed',
+  'Shipment Created',
   'Picked Up',
   'In Transit',
-  'Customs Clearance',
+  'Arrived at Facility',
   'Out for Delivery',
   'Delivered',
+  'On Hold',
 ] as const;
 
 export type TrackingStage = (typeof TRACKING_STAGES)[number];
 
-export type ShipmentStatus = TrackingStage | 'Exception';
+export type ShipmentStatus = TrackingStage;
 
 export interface TrackingEvent {
   stage: TrackingStage;
@@ -74,8 +74,11 @@ export interface ShipmentCustomer {
 
 export interface Shipment {
   trackingNumber: string;
+  archived?: boolean;
   status: ShipmentStatus;
   customer?: ShipmentCustomer | null;
+  sender?: ShipmentCustomer | null;
+  recipient?: ShipmentCustomer | null;
   /** ISO date (no time) the freight is due to be collected. */
   pickupDate?: string | null;
   /**
@@ -152,6 +155,8 @@ export interface TrackingResult
     | 'events'
     | 'etaInDays'
     | 'customer'
+    | 'sender'
+    | 'recipient'
     | 'pickupDate'
     | 'labelUrl'
     | 'carrierTrackingNumber'
@@ -171,18 +176,20 @@ export const SHIPMENTS: Shipment[] = SEED_SHIPMENTS;
 export const DEMO_TRACKING_NUMBERS = SHIPMENTS.map((s) => s.trackingNumber);
 
 /**
- * Accepts the formats people actually paste: `fbx28473921`, `FBX 28473921`,
- * `fbx-28473921`, or the bare `28473921`.
+ * Accepts the formats people actually paste: `ssc28473921`, `SSC 28473921`,
+ * `ssc-28473921`, or the bare `28473921`. Legacy `FBX-` references remain
+ * valid so existing shipment records keep working after the rebrand.
  */
 export function normalizeTrackingNumber(input: string): string {
   const cleaned = input.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   if (!cleaned) return '';
-  const digits = cleaned.startsWith('FBX') ? cleaned.slice(3) : cleaned;
-  return `FBX-${digits}`;
+  if (cleaned.startsWith('SSC')) return `SSC-${cleaned.slice(3)}`;
+  if (cleaned.startsWith('FBX')) return `FBX-${cleaned.slice(3)}`;
+  return `SSC-${cleaned}`;
 }
 
 export function isPlausibleTrackingNumber(input: string): boolean {
-  return /^FBX-\d{6,10}$/.test(normalizeTrackingNumber(input));
+  return /^(SSC|FBX)-\d{6,12}$/.test(normalizeTrackingNumber(input));
 }
 
 /**
@@ -270,24 +277,8 @@ export interface CarrierOutcomeEvent {
   description: string;
 }
 
-/**
- * What a lookup can come back as.
- *
- * `carrier` is the case the site gained when tracking stopped being only about
- * our own consignments: the number is recognisably FedEx, UPS, USPS, DHL and
- * so on, and the answer is that carrier plus a way through to it.
- */
 export type LookupOutcome =
   | { ok: true; shipment: TrackingResult }
-  | {
-      ok: 'carrier';
-      query: string;
-      carrier: CarrierOutcomeSummary;
-      alternatives: CarrierOutcomeSummary[];
-      events: CarrierOutcomeEvent[] | null;
-      status: string | null;
-      note: string | null;
-    }
   | { ok: false; reason: 'empty' | 'malformed' | 'not-found'; query: string };
 
 /**
@@ -299,16 +290,13 @@ export function resolveShipment(shipment: Shipment): TrackingResult {
 }
 
 /**
- * Client-side lookup, for our numbers and other carriers' alike.
+ * Client-side lookup for Swiftstream Cargo shipment numbers.
  *
  * Shipment data lives in Firestore and is only reachable through the Admin
  * SDK, so this cannot query directly — it calls the server, which owns the
  * read and the carrier detection.
  *
- * The only thing rejected without a round trip is a string that no carrier in
- * the registry could have issued. Validating against our own `FBX-` format
- * alone would now turn away every real FedEx and UPS number typed into the
- * box.
+ * Inputs that do not use the Swiftstream format are rejected before a request.
  */
 export async function lookupShipment(rawInput: string): Promise<LookupOutcome> {
   const query = rawInput.trim();
@@ -317,15 +305,11 @@ export async function lookupShipment(rawInput: string): Promise<LookupOutcome> {
     return { ok: false, reason: 'empty', query };
   }
 
-  if (detectCarriers(query).length === 0) {
+  if (!isSwiftstreamNumber(query)) {
     return { ok: false, reason: 'malformed', query };
   }
 
-  // Our own numbers are normalised to `FBX-…`; anything else is passed through
-  // as the carrier issued it, minus the spacing people paste from labels.
-  const normalized = isFreightBridgeNumber(query)
-    ? normalizeTrackingNumber(query)
-    : normalizeCarrierNumber(query);
+  const normalized = normalizeTrackingNumber(query);
 
   try {
     const response = await fetch(`/api/tracking?number=${encodeURIComponent(normalized)}`, {
@@ -340,24 +324,7 @@ export async function lookupShipment(rawInput: string): Promise<LookupOutcome> {
     const body = (await response.json()) as {
       kind?: string;
       shipment?: TrackingResult;
-      carrier?: CarrierOutcomeSummary;
-      alternatives?: CarrierOutcomeSummary[];
-      events?: CarrierOutcomeEvent[] | null;
-      status?: string | null;
-      note?: string | null;
     };
-
-    if (body.kind === 'carrier' && body.carrier) {
-      return {
-        ok: 'carrier',
-        query: normalized,
-        carrier: body.carrier,
-        alternatives: body.alternatives ?? [],
-        events: body.events ?? null,
-        status: body.status ?? null,
-        note: body.note ?? null,
-      };
-    }
 
     if (!body.shipment) {
       return { ok: false, reason: 'not-found', query: normalized };
@@ -383,7 +350,7 @@ export function statusTone(status: ShipmentStatus): {
         className: 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 ring-emerald-600/20',
         dot: 'bg-emerald-500',
       };
-    case 'Exception':
+    case 'On Hold':
       return {
         label: 'Delay reported',
         className: 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-300 ring-rose-600/20',
@@ -398,16 +365,16 @@ export function statusTone(status: ShipmentStatus): {
     // Neutral: pending is not progress and not trouble, it is a shipment
     // waiting on a decision. Giving it the in-transit blue would suggest
     // something is moving when nothing is.
-    case 'Pending':
+    case 'Shipment Created':
       return {
-        label: 'Pending',
+        label: 'Shipment created',
         className: 'bg-ink-100 text-ink-700 ring-ink-300/40',
         dot: 'bg-ink-400',
       };
     // Amber, not the in-transit blue: customs is freight sitting still, and a
     // customer looking at the page wants to see that it is held rather than
     // moving.
-    case 'Customs Clearance':
+    case 'Arrived at Facility':
       return {
         label: 'In customs',
         className: 'bg-amber-50 dark:bg-amber-500/10 text-amber-800 dark:text-amber-200 ring-amber-600/20',
