@@ -19,6 +19,8 @@ export interface FirebaseClientConfig {
   storageBucket?: string;
   /** Only needed for Cloud Messaging. Harmless when absent. */
   messagingSenderId?: string;
+  /** Only needed if Firebase Analytics is initialized later. */
+  measurementId?: string;
 }
 
 export function clientConfig(): FirebaseClientConfig | null {
@@ -38,6 +40,7 @@ export function clientConfig(): FirebaseClientConfig | null {
     appId,
     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || undefined,
     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || undefined,
+    measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID || undefined,
   };
 }
 
