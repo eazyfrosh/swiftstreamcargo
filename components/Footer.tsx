@@ -1,14 +1,10 @@
 import { Linkedin, Mail, MapPin, Phone, Twitter, Youtube } from 'lucide-react';
 import Link from 'next/link';
-import { FOOTER_COLUMNS, SITE, WHATSAPP_URL } from '@/lib/site';
-import { WhatsAppIcon } from './icons/WhatsApp';
+import { FOOTER_COLUMNS } from '@/lib/site';
 import { Logo } from './ui/Logo';
 import type { WebsiteConfig } from '@/lib/operations';
 
-// WhatsApp goes first: it is a way to reach a person, not a feed to follow,
-// and it is the one in this row a customer with a problem actually wants.
 const SOCIALS = [
-  { label: 'Message Swiftstream Cargo on WhatsApp', href: WHATSAPP_URL, icon: WhatsAppIcon },
   { label: 'Swiftstream Cargo on LinkedIn', href: 'https://www.linkedin.com', icon: Linkedin },
   { label: 'Swiftstream Cargo on X', href: 'https://x.com', icon: Twitter },
   { label: 'Swiftstream Cargo on YouTube', href: 'https://www.youtube.com', icon: Youtube },
