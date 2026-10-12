@@ -72,7 +72,22 @@ export function isAuthConfigured(): boolean {
 }
 
 export function serviceAccountRaw(): string | null {
-  return process.env.FIREBASE_SERVICE_ACCOUNT_KEY || null;
+  const completeAccount = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+  if (completeAccount) return completeAccount;
+
+  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+  if (!projectId || !clientEmail || !privateKey) return null;
+
+  // Some hosting dashboards store service-account fields separately. Build
+  // the same JSON shape consumed by the Admin SDK without exposing any field
+  // to the browser or requiring the private key to be committed to a file.
+  return JSON.stringify({
+    project_id: projectId,
+    client_email: clientEmail,
+    private_key: privateKey,
+  });
 }
 
 /**
@@ -88,7 +103,7 @@ export function serviceAccountRaw(): string | null {
  * actions), so accounts cannot be created at all. Belt and braces there.
  */
 export function adminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS || '')
+  return (process.env.ADMIN_EMAILS || process.env.FIREBASE_ADMIN_EMAILS || '')
     .split(',')
     .map((entry) => entry.trim().toLowerCase())
     .filter(Boolean);
