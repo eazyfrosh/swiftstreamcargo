@@ -22,14 +22,15 @@ const FAQ = [
 
 export function TemplateWebsite({ initial }: { initial: CargoTemplateSettings }) {
   const [site, setSite] = useState(initial);
-  useEffect(() => { const receive = (event: MessageEvent) => { if (event.origin === window.location.origin && event.data?.type === 'swiftstream-template-preview') setSite(current => ({ ...current, ...event.data.settings })); }; window.addEventListener('message', receive); return () => window.removeEventListener('message', receive); }, []);
+  const [trackingQuery, setTrackingQuery] = useState('');
+  useEffect(() => { setTrackingQuery(new URLSearchParams(window.location.search).get('tracking') || ''); const receive = (event: MessageEvent) => { if (event.origin === window.location.origin && event.data?.type === 'swiftstream-template-preview') setSite(current => ({ ...current, ...event.data.settings })); }; window.addEventListener('message', receive); return () => window.removeEventListener('message', receive); }, []);
   const style = { '--cargo-primary': site.primaryColor, '--cargo-dark': site.darkColor } as React.CSSProperties;
   const config = { name: site.name, tagline: site.tagline, email: site.email, phone: site.phone, address: site.address, hours: 'Monday–Friday, 8:00–17:00' };
   return <div style={style} className="swiftstream-template min-h-screen bg-surface text-ink-700">
     <style>{`.swiftstream-template .bg-brand-500,.swiftstream-template .bg-brand-600{background-color:var(--cargo-primary)!important}.swiftstream-template .text-brand-300,.swiftstream-template .text-brand-400,.swiftstream-template .text-brand-500,.swiftstream-template .text-brand-600,.swiftstream-template .text-brand-700{color:var(--cargo-primary)!important}.swiftstream-template .border-brand-400,.swiftstream-template .border-brand-500{border-color:var(--cargo-primary)!important}.swiftstream-template .bg-night-950,.swiftstream-template .bg-night-900,.swiftstream-template .bg-navy-900{background-color:var(--cargo-dark)!important}`}</style>
     <Navbar config={config} logoDataUrl={site.logoDataUrl} homeHref={`/site/${site.siteId}`} />
     <main id="main"><Hero tagline={site.tagline} />
-      <section id="tracking" className="relative z-10 -mt-20 bg-transparent"><div className="container"><TrackingWidget variant="floating" /></div></section>
+      <section id="tracking" className="relative z-10 -mt-20 bg-transparent"><div className="container"><TrackingWidget variant="floating" siteId={site.siteId} initialQuery={trackingQuery} /></div></section>
       <NetworkStory /><Services /><WhySwiftstream /><HowItWorks />
       <section className="section bg-surface"><div className="container grid gap-12 lg:grid-cols-[.72fr_1.28fr] lg:gap-20"><div><span className="eyebrow">Frequently asked</span><h2 className="display-2 mt-5">Straight answers before you ship.</h2></div><Accordion items={FAQ} /></div></section>
       <CTA />

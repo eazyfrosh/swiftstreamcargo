@@ -298,7 +298,7 @@ export function resolveShipment(shipment: Shipment): TrackingResult {
  *
  * Inputs that do not use the Swiftstream format are rejected before a request.
  */
-export async function lookupShipment(rawInput: string): Promise<LookupOutcome> {
+export async function lookupShipment(rawInput: string, siteId?: string): Promise<LookupOutcome> {
   const query = rawInput.trim();
 
   if (!query) {
@@ -312,7 +312,9 @@ export async function lookupShipment(rawInput: string): Promise<LookupOutcome> {
   const normalized = normalizeTrackingNumber(query);
 
   try {
-    const response = await fetch(`/api/tracking?number=${encodeURIComponent(normalized)}`, {
+    const params = new URLSearchParams({ number: normalized });
+    if (siteId) params.set('site', siteId);
+    const response = await fetch(`/api/tracking?${params.toString()}`, {
       cache: 'no-store',
       headers: { Accept: 'application/json' },
     });

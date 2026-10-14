@@ -41,6 +41,8 @@ interface TrackingWidgetProps {
    * missing from it fall back to their initials, so passing nothing is fine.
    */
   logos?: CarrierLogos;
+  /** Restrict lookups to one EazyTool customer website. */
+  siteId?: string;
 }
 
 // Describe the format rather than print a specimen number. A realistic-looking
@@ -66,6 +68,7 @@ export function TrackingWidget({
   initialQuery = '',
   className,
   logos = {},
+  siteId,
 }: TrackingWidgetProps) {
   const [query, setQuery] = useState(initialQuery);
   const [status, setStatus] = useState<Status>('idle');
@@ -76,10 +79,10 @@ export function TrackingWidget({
   const runLookup = useCallback(async (value: string) => {
     setStatus('loading');
     setOutcome(null);
-    const result = await lookupShipment(value);
+    const result = await lookupShipment(value, siteId);
     setOutcome(result);
     setStatus('done');
-  }, []);
+  }, [siteId]);
 
   // A number arriving in the URL — from the hero form, or a shared link — has
   // to resolve on load. Seeding the input alone would leave the visitor
@@ -104,7 +107,7 @@ export function TrackingWidget({
       if (document.visibilityState !== 'visible' || refreshing) return;
       refreshing = true;
       try {
-        const latest = await lookupShipment(displayedNumber!);
+        const latest = await lookupShipment(displayedNumber!, siteId);
         if (!disposed && latest.ok === true) setOutcome(latest);
       } finally {
         refreshing = false;
@@ -117,7 +120,7 @@ export function TrackingWidget({
       window.clearInterval(timer);
       document.removeEventListener('visibilitychange', refresh);
     };
-  }, [displayedNumber]);
+  }, [displayedNumber, siteId]);
 
   return (
     <div

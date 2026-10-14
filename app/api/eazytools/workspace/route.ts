@@ -16,7 +16,7 @@ function variables(site: Awaited<ReturnType<typeof readWorkspace>>, shipment: Fi
     service: shipment.service || shipment.shipmentType || '', origin: shipment.origin || '', destination: shipment.destination || '',
     currentLocation: shipment.currentLocation || shipment.origin || '', carrier: shipment.carrier || site?.name || 'Our logistics team',
     pieces: String(shipment.pieces || 1), weight: shipment.weight || '', estimatedDelivery: shipment.estimatedDelivery || shipment.pickupDate || 'To be confirmed',
-    trackingUrl: `${origin}/site/${site?.siteId || ''}#tracking`, companyName: site?.name || 'SwiftStream Cargo',
+    trackingUrl: `${origin}/site/${site?.siteId || ''}?tracking=${encodeURIComponent(shipment.trackingNumber || '')}#tracking`, companyName: site?.name || 'SwiftStream Cargo',
   };
 }
 
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       transaction.create(root.collection('shipments').doc(id), { id, trackingNumber, customer, customerEmail, businessName, phone, senderName, senderEmail, senderPhone, fromCountry, fromCity, fromZip, toCountry, toCity, toZip, origin: `${fromCity}, ${fromCountry}`, destination: `${toCity}, ${toCountry}`, shipmentType, weight, pieces, dimensions, pickupDate, service, status: 'Booked', createdAt: now, updatedAt: now });
       transaction.create(root.collection('audit_logs').doc(), { actorId: ctx.ownerId, action: 'shipment.created', targetId: id, createdAt: now });
     });
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, trackingNumber, message: `Shipment created successfully. Tracking number: ${trackingNumber}` });
   }
   if (action === 'template-save') {
     const templateId = clean(body.templateId, 40); const subject = clean(body.subject, 200); const templateBody = clean(body.body, 8000);
@@ -98,7 +98,9 @@ export async function POST(request: Request) {
     const base = DEFAULT_TEMPLATES.find(item => item.id === templateId)!; const override = templateSnap.data(); const template = { ...base, ...override, id: base.id };
     const values = variables(ctx.site, shipmentSnap.data() || {}, recipientName, new URL(request.url).origin);
     const subject = fillPlaceholders(template.subject, values); const text = fillPlaceholders(template.body, values);
-    const html = renderHtml(text, { companyName: ctx.site.name, trackingUrl: values.trackingUrl, logoUrl: ctx.site.logoDataUrl || `${new URL(request.url).origin}/images/email-logo.png` });
+    const publicOrigin = new URL(request.url).origin;
+    const logoUrl = ctx.site.logoDataUrl ? `${publicOrigin}/api/eazytools/logo?site=${ctx.siteId}` : `${publicOrigin}/images/email-logo.png`;
+    const html = renderHtml(text, { companyName: ctx.site.name, trackingUrl: values.trackingUrl, logoUrl });
     if (action === 'notification-preview') return NextResponse.json({ preview: { subject, text, html } });
     if (!to) return NextResponse.json({ error: 'Enter a valid recipient email address.' }, { status: 400 });
     if (!emailConfigured()) return NextResponse.json({ error: `Email sending is not configured. ${emailConfigError() || ''}`.trim() }, { status: 503 });
