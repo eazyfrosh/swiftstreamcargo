@@ -10,7 +10,7 @@ const SOCIALS = [
   { label: 'Swiftstream Cargo on YouTube', href: 'https://www.youtube.com', icon: Youtube },
 ];
 
-export function Footer({ config }: { config: WebsiteConfig }) {
+export function Footer({ config, logoDataUrl = '', copyrightText }: { config: WebsiteConfig; logoDataUrl?: string; copyrightText?: string }) {
   return (
     <footer className="on-dark relative overflow-hidden bg-navy-900 text-white">
       <div aria-hidden="true" className="pointer-events-none absolute inset-0">
@@ -25,7 +25,7 @@ export function Footer({ config }: { config: WebsiteConfig }) {
         <div className="grid gap-12 py-16 lg:grid-cols-[1.35fr_2.65fr] lg:gap-16 lg:py-20">
           {/* Brand */}
           <div>
-            <Logo tone="light" name={config.name} />
+            <Logo tone="light" name={config.name} logoDataUrl={logoDataUrl} />
             <p className="mt-5 max-w-sm text-[0.95rem] leading-relaxed text-white">
               Swiftstream Cargo is a modern freight transportation company helping businesses move shipments
               efficiently across cities, states, and international destinations.
@@ -80,7 +80,7 @@ export function Footer({ config }: { config: WebsiteConfig }) {
 
         {/* Bottom bar */}
         <div className="flex flex-col items-start justify-between gap-6 border-t border-white/25 py-7 sm:flex-row sm:items-center">
-          <p className="text-sm text-white/70">© {new Date().getFullYear()} {config.name}. All rights reserved.</p>
+          <p className="text-sm text-white/70">{copyrightText || `© ${new Date().getFullYear()} ${config.name}. All rights reserved.`}</p>
 
           <div className="flex items-center gap-4">
             <p className="hidden text-sm text-white/70 sm:block">{config.tagline}</p>

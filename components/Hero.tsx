@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { HERO_MEDIA } from '@/lib/site';
 import { useReducedMotion } from '@/lib/use-reduced-motion';
 
-export function Hero() {
+export function Hero({ tagline = 'Road, air, ocean, warehousing, and final-mile coordination through one accountable logistics team.' }: { tagline?: string }) {
   const reduced = useReducedMotion();
   return (
     <section className="relative isolate min-h-[760px] overflow-hidden bg-night-950 pt-[76px] lg:pt-[112px]">
@@ -21,7 +21,7 @@ export function Hero() {
         <motion.div initial={reduced ? undefined : { opacity: 0, y: 24 }} animate={reduced ? undefined : { opacity: 1, y: 0 }} transition={{ duration: .75 }} className="max-w-3xl text-white">
           <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[.2em] text-brand-300"><span className="h-px w-10 bg-brand-400" />Connected freight, handled carefully</p>
           <h1 className="mt-6 font-display text-[3.1rem] font-semibold uppercase leading-[.98] tracking-[-.055em] text-white sm:text-6xl lg:text-[5.3rem]">Moving freight.<br /><span className="text-brand-400">Building trust.</span></h1>
-          <p className="mt-7 max-w-2xl text-lg leading-relaxed text-white/75 sm:text-xl">Road, air, ocean, warehousing, and final-mile coordination through one accountable logistics team.</p>
+          <p className="mt-7 max-w-2xl text-lg leading-relaxed text-white/75 sm:text-xl">{tagline}</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row"><Link href="/quote" className="inline-flex h-14 items-center justify-center gap-2 bg-brand-500 px-7 font-semibold text-night-950 transition hover:bg-brand-400">Request a quote <ArrowRight className="h-4 w-4" /></Link><Link href="/tracking" className="inline-flex h-14 items-center justify-center gap-2 border border-white/40 bg-white/10 px-7 font-semibold text-white backdrop-blur transition hover:bg-white/20"><PackageSearch className="h-4 w-4" />Track shipment</Link></div>
           <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/70">{['Database-backed tracking', 'Human operations support', 'Clear milestone updates'].map((item) => <li key={item} className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-brand-400" />{item}</li>)}</ul>
         </motion.div>

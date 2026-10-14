@@ -1,20 +1,40 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowRight, Box, Globe2, Mail, MapPin, Menu, PackageSearch, Phone, Ship, Truck, Warehouse } from 'lucide-react';
+import { Accordion } from '@/components/Accordion';
+import { CTA } from '@/components/CTA';
+import { Footer } from '@/components/Footer';
+import { Hero } from '@/components/Hero';
+import { HowItWorks } from '@/components/HowItWorks';
+import { Navbar } from '@/components/Navbar';
+import { NetworkStory } from '@/components/NetworkStory';
+import { Services } from '@/components/Services';
+import { TrackingWidget } from '@/components/TrackingWidget';
+import { WhySwiftstream } from '@/components/WhySwiftstream';
 import type { CargoTemplateSettings } from '@/lib/eazytools-workspace';
+
+const FAQ = [
+  { question: 'Where do tracking updates come from?', answer: 'The public timeline shows the shipment milestones recorded by the logistics team.' },
+  { question: 'Can I request a quote without an account?', answer: 'Yes. Share the route, shipment type, and contact details to begin.' },
+  { question: 'What happens when a tracking number is not found?', answer: 'Check the reference and try again, or contact the support team for help.' },
+  { question: 'Which services can be combined?', answer: 'Road, forwarding, warehousing, and final-mile services can be coordinated as one movement.' },
+];
 
 export function TemplateWebsite({ initial }: { initial: CargoTemplateSettings }) {
   const [site, setSite] = useState(initial);
   useEffect(() => { const receive = (event: MessageEvent) => { if (event.origin === window.location.origin && event.data?.type === 'swiftstream-template-preview') setSite(current => ({ ...current, ...event.data.settings })); }; window.addEventListener('message', receive); return () => window.removeEventListener('message', receive); }, []);
   const style = { '--cargo-primary': site.primaryColor, '--cargo-dark': site.darkColor } as React.CSSProperties;
-  return <div style={style} className="min-h-screen bg-white text-slate-900"><header className="sticky top-0 z-20 bg-[var(--cargo-dark)] text-white"><div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-5"><Brand site={site} /><nav className="hidden gap-7 text-sm text-white/70 md:flex"><a href="#services">Services</a><a href="#tracking">Tracking</a><a href="#contact">Contact</a></nav><button className="grid size-11 place-items-center rounded-full border border-white/20 md:hidden"><Menu /></button></div></header>
-    <main><section className="relative overflow-hidden bg-[var(--cargo-dark)] px-5 py-24 text-white sm:py-32"><div className="absolute -right-40 top-0 size-[34rem] rounded-full bg-[var(--cargo-primary)] opacity-20 blur-3xl"/><div className="relative mx-auto max-w-7xl"><p className="text-xs font-bold uppercase tracking-[.24em] text-[var(--cargo-primary)]">Connected logistics</p><h1 className="mt-5 max-w-4xl text-5xl font-black uppercase leading-[.95] tracking-[-.05em] sm:text-7xl">Freight that keeps your business moving.</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-white/65">{site.tagline}</p><div className="mt-8 flex flex-wrap gap-3"><a href="#contact" className="inline-flex items-center gap-2 bg-[var(--cargo-primary)] px-6 py-3 font-bold">Request a quote <ArrowRight size={17}/></a><a href="#tracking" className="border border-white/25 px-6 py-3 font-semibold">Track shipment</a></div></div></section>
-      <section id="tracking" className="relative z-10 mx-auto -mt-8 max-w-5xl px-5"><div className="rounded-3xl border bg-white p-6 shadow-2xl sm:p-8"><div className="flex items-center gap-3"><PackageSearch className="text-[var(--cargo-primary)]"/><div><h2 className="text-xl font-bold">Track your shipment</h2><p className="text-sm text-slate-500">Enter the tracking reference supplied by our team.</p></div></div><div className="mt-5 flex flex-col gap-3 sm:flex-row"><input className="h-13 flex-1 rounded-xl border px-4" placeholder="SSC-000000000000"/><button className="rounded-xl bg-[var(--cargo-dark)] px-6 py-3 font-bold text-white">Track now</button></div></div></section>
-      <section id="services" className="mx-auto max-w-7xl px-5 py-24"><p className="text-xs font-bold uppercase tracking-[.2em] text-[var(--cargo-primary)]">Our capabilities</p><h2 className="mt-3 text-4xl font-bold">One partner across the journey.</h2><div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{[[Truck,'Road freight'],[Ship,'Ocean freight'],[Globe2,'Air forwarding'],[Warehouse,'Warehousing']].map(([Icon,label]) => { const I = Icon as typeof Truck; return <article key={String(label)} className="rounded-3xl border p-6 shadow-sm"><span className="grid size-12 place-items-center rounded-2xl bg-[var(--cargo-primary)] text-white"><I/></span><h3 className="mt-5 text-xl font-bold">{String(label)}</h3><p className="mt-2 text-sm leading-6 text-slate-500">Reliable coordination, clear milestones, and responsive customer support.</p></article>; })}</div></section>
-      <section id="contact" className="bg-slate-50 px-5 py-20"><div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-2"><div><p className="text-xs font-bold uppercase tracking-[.2em] text-[var(--cargo-primary)]">Contact us</p><h2 className="mt-3 text-4xl font-bold">Ready to move your cargo?</h2><p className="mt-4 text-slate-500">Speak with our logistics team about your route, timing, and shipment requirements.</p></div><div className="grid gap-3"><a href={`mailto:${site.email}`} className="flex items-center gap-3 rounded-2xl bg-white p-4"><Mail className="text-[var(--cargo-primary)]"/>{site.email}</a><a href={`tel:${site.phone}`} className="flex items-center gap-3 rounded-2xl bg-white p-4"><Phone className="text-[var(--cargo-primary)]"/>{site.phone}</a><p className="flex items-start gap-3 rounded-2xl bg-white p-4"><MapPin className="shrink-0 text-[var(--cargo-primary)]"/>{site.address}</p></div></div></section></main>
-    <footer className="bg-[var(--cargo-dark)] px-5 py-9 text-white"><div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><Brand site={site}/><p className="text-sm text-white/50">{site.copyrightText}</p></div></footer>
+  const config = { name: site.name, tagline: site.tagline, email: site.email, phone: site.phone, address: site.address, hours: 'Monday–Friday, 8:00–17:00' };
+  return <div style={style} className="swiftstream-template min-h-screen bg-surface text-ink-700">
+    <style>{`.swiftstream-template .bg-brand-500,.swiftstream-template .bg-brand-600{background-color:var(--cargo-primary)!important}.swiftstream-template .text-brand-300,.swiftstream-template .text-brand-400,.swiftstream-template .text-brand-500,.swiftstream-template .text-brand-600,.swiftstream-template .text-brand-700{color:var(--cargo-primary)!important}.swiftstream-template .border-brand-400,.swiftstream-template .border-brand-500{border-color:var(--cargo-primary)!important}.swiftstream-template .bg-night-950,.swiftstream-template .bg-night-900,.swiftstream-template .bg-navy-900{background-color:var(--cargo-dark)!important}`}</style>
+    <Navbar config={config} logoDataUrl={site.logoDataUrl} homeHref={`/site/${site.siteId}`} />
+    <main id="main"><Hero tagline={site.tagline} />
+      <section id="tracking" className="relative z-10 -mt-20 bg-transparent"><div className="container"><TrackingWidget variant="floating" /></div></section>
+      <NetworkStory /><Services /><WhySwiftstream /><HowItWorks />
+      <section className="section bg-surface"><div className="container grid gap-12 lg:grid-cols-[.72fr_1.28fr] lg:gap-20"><div><span className="eyebrow">Frequently asked</span><h2 className="display-2 mt-5">Straight answers before you ship.</h2></div><Accordion items={FAQ} /></div></section>
+      <CTA />
+    </main>
+    <Footer config={config} logoDataUrl={site.logoDataUrl} copyrightText={site.copyrightText} />
     {site.whatsappEnabled && site.whatsappNumber && <a aria-label="Open WhatsApp" target="_blank" href={`https://wa.me/${site.whatsappNumber.replace(/\D/g,'')}`} className="fixed bottom-5 right-5 grid size-14 place-items-center rounded-full bg-emerald-500 font-bold text-white shadow-xl">WA</a>}{site.telegramEnabled && site.telegramUrl && <a aria-label="Open Telegram" target="_blank" href={site.telegramUrl} className="fixed bottom-5 right-24 grid size-14 place-items-center rounded-full bg-sky-500 font-bold text-white shadow-xl">TG</a>}
   </div>;
 }
-function Brand({ site }: { site: CargoTemplateSettings }) { return <span className="inline-flex items-center gap-3 font-bold">{site.logoDataUrl ? <img src={site.logoDataUrl} alt="" className="size-11 rounded-xl object-contain"/> : <span className="grid size-11 place-items-center rounded-xl bg-[var(--cargo-primary)]"><Box/></span>}<span>{site.name}</span></span>; }

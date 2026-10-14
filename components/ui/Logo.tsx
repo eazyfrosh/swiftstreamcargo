@@ -9,6 +9,7 @@ interface LogoProps {
   showWordmark?: boolean;
   onClick?: () => void;
   name?: string;
+  logoDataUrl?: string;
 }
 
 /** Original Swiftstream Cargo mark: an S-shaped current ending in a forward arrow. */
@@ -48,10 +49,16 @@ export function LogoMark({ tone = 'dark', className }: { tone?: 'dark' | 'light'
   );
 }
 
-export function Logo({ tone = 'dark', className, href = '/', showWordmark = true, onClick, name = 'Swiftstream Cargo' }: LogoProps) {
+export function Logo({ tone = 'dark', className, href = '/', showWordmark = true, onClick, name = 'Swiftstream Cargo', logoDataUrl }: LogoProps) {
   const content = (
     <span className={cn('inline-flex items-center gap-2.5', className)}>
-      <LogoMark tone={tone} />
+      {logoDataUrl ? (
+        <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-sm">
+          {/* Workspace logos are validated as image data URLs before saving. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={logoDataUrl} alt="" className="h-full w-full object-contain" />
+        </span>
+      ) : <LogoMark tone={tone} />}
       {showWordmark && (
         <span
           className={cn(

@@ -12,7 +12,7 @@ import { Logo } from './ui/Logo';
 import { useReducedMotion } from '@/lib/use-reduced-motion';
 import type { WebsiteConfig } from '@/lib/operations';
 
-export function Navbar({ config }: { config: WebsiteConfig }) {
+export function Navbar({ config, logoDataUrl = '', homeHref = '/' }: { config: WebsiteConfig; logoDataUrl?: string; homeHref?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [openMenu, setOpenMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -98,7 +98,7 @@ export function Navbar({ config }: { config: WebsiteConfig }) {
               scrolled ? 'h-[66px]' : 'h-[76px]',
             )}
           >
-            <Logo onClick={closeAll} tone="light" name={config.name} />
+            <Logo onClick={closeAll} tone="light" name={config.name} logoDataUrl={logoDataUrl} href={homeHref} />
 
             {/* Desktop navigation */}
             <nav aria-label="Main" className="hidden lg:block" onMouseLeave={scheduleClose}>
@@ -172,7 +172,7 @@ export function Navbar({ config }: { config: WebsiteConfig }) {
               transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="flex h-[80px] items-center justify-between border-b border-ink-100 px-5">
-                <Logo onClick={closeAll} name={config.name} />
+                <Logo onClick={closeAll} name={config.name} logoDataUrl={logoDataUrl} href={homeHref} />
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
