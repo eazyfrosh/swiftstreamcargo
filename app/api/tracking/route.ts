@@ -60,13 +60,22 @@ async function indexedWorkspaceShipment(trackingNumber: string): Promise<Shipmen
   }
 
   // Compatibility for shipments created before the public index was added.
-  // Once found, cache a pointer so every later lookup is a cheap point read.
-  const legacy = await db.collectionGroup('shipments').where('trackingNumber', '==', trackingNumber).limit(1).get();
-  const match = legacy.docs[0];
-  const siteRef = match?.ref.parent.parent;
-  if (!match || siteRef?.parent?.id !== 'premiumTemplateSites') return null;
-  await indexRef.set({ siteId: siteRef.id, shipmentId: match.id, createdAt: new Date().toISOString(), migrated: true });
-  return workspaceShipment(match.data());
+  // Do not use a collection-group query here: older Firebase projects require
+  // an extra index for it, which turned a valid tracking lookup into HTTP 500.
+  // This bounded legacy scan runs only once per old number, then caches the
+  // pointer so every subsequent lookup is a cheap point read.
+  const sites = await db.collection('premiumTemplateSites').select().limit(250).get();
+  for (let start = 0; start < sites.docs.length; start += 10) {
+    const group = sites.docs.slice(start, start + 10);
+    const matches = await Promise.all(group.map(site => site.ref.collection('shipments').where('trackingNumber', '==', trackingNumber).limit(1).get()));
+    const position = matches.findIndex(result => !result.empty);
+    if (position < 0) continue;
+    const match = matches[position].docs[0];
+    const siteId = group[position].id;
+    await indexRef.set({ siteId, shipmentId: match.id, createdAt: new Date().toISOString(), migrated: true });
+    return workspaceShipment(match.data());
+  }
+  return null;
 }
 
 /** Public exact-number lookup. Every returned event comes from the stored shipment document. */
