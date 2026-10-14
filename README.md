@@ -362,6 +362,13 @@ Set `RESEND_API_KEY` and `EMAIL_FROM` to enable sending; the From domain must
 be verified in Resend or it will refuse. Without them, editing and previewing
 still work and the UI says why sending is off.
 
+Premium Template owners can instead open **Private admin → Email domain**,
+add a sending domain or subdomain, copy the DNS records returned by Resend,
+verify it, and save their sender address. The Resend key stays server-side and
+is never shown to customers. Use a Resend API key with domain-management
+access for this workflow; `EMAIL_FROM` remains the platform fallback until a
+workspace domain is verified.
+
 Not built: sending automatically on a status change (every send is a
 deliberate act), bulk sends, scheduling, open tracking, and unsubscribe
 handling — these are transactional notifications, but check your obligations

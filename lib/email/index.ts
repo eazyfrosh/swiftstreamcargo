@@ -223,9 +223,9 @@ export interface SendResult {
  * A text alternative goes alongside the HTML: some clients prefer it, spam
  * filters expect it, and it is free — we authored the plain text first.
  */
-export async function deliverEmail(to: string, email: RenderedEmail): Promise<SendResult> {
+export async function deliverEmail(to: string, email: RenderedEmail, options: { from?: string; replyTo?: string } = {}): Promise<SendResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
-  const from = emailFrom();
+  const from = options.from || emailFrom();
   if (!apiKey || !from) return { ok: false, error: emailConfigError() ?? 'Email is not configured.' };
 
   // Overridable so the send path can be exercised against a stub, and so a
@@ -242,6 +242,7 @@ export async function deliverEmail(to: string, email: RenderedEmail): Promise<Se
         subject: email.subject,
         html: email.html,
         text: email.text,
+        ...(options.replyTo ? { reply_to: options.replyTo } : {}),
         ...(process.env.EMAIL_REPLY_TO?.trim() ? { reply_to: process.env.EMAIL_REPLY_TO.trim() } : {}),
       }),
     });

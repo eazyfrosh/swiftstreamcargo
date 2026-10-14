@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { currentOwner, readWorkspace, workspaceDb, workspaceId } from '@/lib/eazytools-workspace';
 import { deliverEmail, emailConfigError, emailConfigured } from '@/lib/email';
 import { DEFAULT_TEMPLATES, fillPlaceholders, renderHtml } from '@/lib/email/templates';
+import { createResendDomain, getResendDomain, resendDomainConfigured, verifyResendDomain } from '@/lib/email/resend-domains';
 
 export const runtime = 'nodejs';
 const statuses = new Set(['Booked', 'Picked up', 'In transit', 'At facility', 'Out for delivery', 'Delivered', 'Exception']);
@@ -37,13 +38,14 @@ export async function GET() {
   const ctx = await context();
   if (!ctx) return NextResponse.json({ error: 'Open your admin from EazyTool again.' }, { status: 401 });
   const root = workspaceDb().collection('premiumTemplateSites').doc(ctx.siteId);
-  const [shipments, audit, enquiries, chats, emailTemplates, emailSends] = await Promise.all([
+  const [shipments, audit, enquiries, chats, emailTemplates, emailSends, emailDomain] = await Promise.all([
     root.collection('shipments').orderBy('createdAt', 'desc').limit(50).get(),
     root.collection('audit_logs').orderBy('createdAt', 'desc').limit(12).get(),
     root.collection('enquiries').orderBy('createdAt', 'desc').limit(50).get(),
     root.collection('chats').orderBy('updatedAt', 'desc').limit(50).get(),
     root.collection('email_templates').get(),
     root.collection('email_sends').orderBy('createdAt', 'desc').limit(100).get(),
+    root.collection('email_domains').doc('primary').get(),
   ]);
   return NextResponse.json({
     site: ctx.site,
@@ -53,8 +55,10 @@ export async function GET() {
     chats: chats.docs.map(doc => ({ id: doc.id, ...doc.data() })),
     emailTemplates: mergeTemplates(emailTemplates.docs),
     emailSends: emailSends.docs.map(doc => ({ id: doc.id, ...doc.data() })),
-    emailConfigured: emailConfigured(),
-    emailConfigError: emailConfigError(),
+    emailConfigured: emailConfigured() || (resendDomainConfigured() && emailDomain.get('status') === 'verified' && Boolean(emailDomain.get('senderLocalPart'))),
+    emailConfigError: emailDomain.get('status') === 'verified' && emailDomain.get('senderLocalPart') ? null : emailConfigError(),
+    emailDomain: emailDomain.exists ? emailDomain.data() : null,
+    resendDomainConfigured: resendDomainConfigured(),
   });
 }
 
@@ -67,6 +71,31 @@ export async function POST(request: Request) {
   const action = clean(body.action, 40);
   const root = workspaceDb().collection('premiumTemplateSites').doc(ctx.siteId);
   const now = new Date().toISOString();
+  if (action === 'email-domain-create') {
+    const domain = clean(body.domain, 253).toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
+    if (!/^(?=.{4,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(domain)) return NextResponse.json({ error: 'Enter a valid domain, for example cargo.example.com.' }, { status: 400 });
+    const ref = root.collection('email_domains').doc('primary');
+    if ((await ref.get()).exists) return NextResponse.json({ error: 'A domain is already connected. Contact support before replacing it.' }, { status: 409 });
+    try {
+      const created = await createResendDomain(domain);
+      await ref.set({ provider: 'resend', providerDomainId: created.id, domain: created.name || domain, status: created.status || 'pending', records: created.records || [], senderLocalPart: 'tracking', senderDisplayName: ctx.site.name, replyTo: ctx.site.email, createdAt: now, updatedAt: now });
+      return NextResponse.json({ ok: true, message: 'Domain added. Add the DNS records below, then verify it.' });
+    } catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : 'Domain could not be added.' }, { status: 502 }); }
+  }
+  if (action === 'email-domain-refresh') {
+    const ref = root.collection('email_domains').doc('primary'); const saved = await ref.get(); const providerDomainId = saved.get('providerDomainId');
+    if (!saved.exists || typeof providerDomainId !== 'string') return NextResponse.json({ error: 'Add your email domain first.' }, { status: 404 });
+    try { await verifyResendDomain(providerDomainId); const current = await getResendDomain(providerDomainId); await ref.set({ status: current.status || 'pending', records: current.records || [], updatedAt: now }, { merge: true }); return NextResponse.json({ ok: true, message: current.status === 'verified' ? 'Domain verified. You can now send from it.' : 'Verification started. DNS changes can take a little time.' }); }
+    catch (error) { return NextResponse.json({ error: error instanceof Error ? error.message : 'Verification could not be checked.' }, { status: 502 }); }
+  }
+  if (action === 'email-sender-save') {
+    const ref = root.collection('email_domains').doc('primary'); const saved = await ref.get();
+    if (!saved.exists || saved.get('status') !== 'verified') return NextResponse.json({ error: 'Verify the domain before creating a sender.' }, { status: 400 });
+    const senderLocalPart = clean(body.senderLocalPart, 64).toLowerCase(); const senderDisplayName = clean(body.senderDisplayName, 80).replace(/[\r\n"<>]/g, ''); const replyTo = email(body.replyTo);
+    if (!/^[a-z0-9](?:[a-z0-9._+-]{0,62}[a-z0-9])?$/.test(senderLocalPart) || !senderDisplayName || !replyTo) return NextResponse.json({ error: 'Enter a valid sender name, address, and reply-to email.' }, { status: 400 });
+    await ref.set({ senderLocalPart, senderDisplayName, replyTo, updatedAt: now }, { merge: true });
+    return NextResponse.json({ ok: true, message: `Sender saved as ${senderLocalPart}@${saved.get('domain')}.` });
+  }
   if (action === 'shipment-create') {
     const customer = clean(body.customer); const customerEmail = email(body.customerEmail); const fromCountry = clean(body.fromCountry); const fromCity = clean(body.fromCity); const fromZip = clean(body.fromZip); const toCountry = clean(body.toCountry); const toCity = clean(body.toCity); const toZip = clean(body.toZip);
     const shipmentType = clean(body.shipmentType, 40); const weight = clean(body.weight, 40); const pieces = Number(body.pieces); const packageLength = Number(body.packageLength); const packageWidth = Number(body.packageWidth); const packageHeight = Number(body.packageHeight); const dimensionUnit = clean(body.dimensionUnit, 4); const dimensions = `${packageLength} × ${packageWidth} × ${packageHeight} ${dimensionUnit}`; const pickupDate = clean(body.pickupDate, 20); const service = clean(body.service, 80) || 'Standard';
@@ -106,8 +135,10 @@ export async function POST(request: Request) {
     const html = renderHtml(text, { companyName: ctx.site.name, trackingUrl: values.trackingUrl, logoUrl });
     if (action === 'notification-preview') return NextResponse.json({ preview: { subject, text, html } });
     if (!to) return NextResponse.json({ error: 'Enter a valid recipient email address.' }, { status: 400 });
-    if (!emailConfigured()) return NextResponse.json({ error: `Email sending is not configured. ${emailConfigError() || ''}`.trim() }, { status: 503 });
-    const result = await deliverEmail(to, { subject, text, html });
+    const domainSnap = await root.collection('email_domains').doc('primary').get();
+    const customSender = domainSnap.exists && domainSnap.get('status') === 'verified' && domainSnap.get('senderLocalPart') && domainSnap.get('domain') ? `${domainSnap.get('senderDisplayName') || ctx.site.name} <${domainSnap.get('senderLocalPart')}@${domainSnap.get('domain')}>` : '';
+    if (!customSender && !emailConfigured()) return NextResponse.json({ error: `Email sending is not configured. ${emailConfigError() || ''}`.trim() }, { status: 503 });
+    const result = await deliverEmail(to, { subject, text, html }, customSender ? { from: customSender, replyTo: domainSnap.get('replyTo') || ctx.site.email } : {});
     const sendId = randomUUID();
     await root.collection('email_sends').doc(sendId).set({ id: sendId, shipmentId, trackingNumber: values.trackingNumber, templateId, templateName: template.name, to, subject, providerMessageId: result.id || null, status: result.ok ? 'sent' : 'failed', error: result.error || null, createdAt: now, actorId: ctx.ownerId });
     if (!result.ok) return NextResponse.json({ error: result.error || 'The email provider refused this message.' }, { status: 502 });
