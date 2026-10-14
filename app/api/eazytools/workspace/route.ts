@@ -77,6 +77,9 @@ export async function POST(request: Request) {
     const trackingNumber = `SSC-${Math.floor(100000000000 + Math.random() * 900000000000)}`;
     await workspaceDb().runTransaction(async transaction => {
       transaction.create(root.collection('shipments').doc(id), { id, trackingNumber, customer, customerEmail, businessName, phone, senderName, senderEmail, senderPhone, fromCountry, fromCity, fromZip, toCountry, toCity, toZip, origin: `${fromCity}, ${fromCountry}`, destination: `${toCity}, ${toCountry}`, shipmentType, weight, pieces, dimensions, pickupDate, service, status: 'Booked', createdAt: now, updatedAt: now });
+      // Public tracking performs a point read through this non-sensitive index.
+      // Recipient details remain only inside the owner's private workspace.
+      transaction.create(workspaceDb().collection('workspaceTracking').doc(trackingNumber), { siteId: ctx.siteId, shipmentId: id, createdAt: now });
       transaction.create(root.collection('audit_logs').doc(), { actorId: ctx.ownerId, action: 'shipment.created', targetId: id, createdAt: now });
     });
     return NextResponse.json({ ok: true, trackingNumber, message: `Shipment created successfully. Tracking number: ${trackingNumber}` });

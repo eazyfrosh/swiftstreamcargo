@@ -46,6 +46,29 @@ function workspaceShipment(data: FirebaseFirestore.DocumentData): Shipment | nul
   };
 }
 
+async function indexedWorkspaceShipment(trackingNumber: string): Promise<Shipment | null> {
+  const db = workspaceDb();
+  const indexRef = db.collection('workspaceTracking').doc(trackingNumber);
+  const pointer = await indexRef.get();
+  if (pointer.exists) {
+    const siteId = pointer.get('siteId');
+    const shipmentId = pointer.get('shipmentId');
+    if (typeof siteId === 'string' && typeof shipmentId === 'string') {
+      const stored = await db.collection('premiumTemplateSites').doc(siteId).collection('shipments').doc(shipmentId).get();
+      if (stored.exists && stored.get('trackingNumber') === trackingNumber) return workspaceShipment(stored.data() || {});
+    }
+  }
+
+  // Compatibility for shipments created before the public index was added.
+  // Once found, cache a pointer so every later lookup is a cheap point read.
+  const legacy = await db.collectionGroup('shipments').where('trackingNumber', '==', trackingNumber).limit(1).get();
+  const match = legacy.docs[0];
+  const siteRef = match?.ref.parent.parent;
+  if (!match || siteRef?.parent?.id !== 'premiumTemplateSites') return null;
+  await indexRef.set({ siteId: siteRef.id, shipmentId: match.id, createdAt: new Date().toISOString(), migrated: true });
+  return workspaceShipment(match.data());
+}
+
 /** Public exact-number lookup. Every returned event comes from the stored shipment document. */
 export async function GET(request: Request) {
   const raw = new URL(request.url).searchParams.get('number')?.trim() ?? '';
@@ -68,8 +91,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ kind: 'workspace', shipment: resolveShipment(stored) });
     }
     const shipment = await findShipment(normalizeTrackingNumber(raw));
-    if (!shipment) return NextResponse.json({ error: 'No stored shipment matches that number.' }, { status: 404 });
-    return NextResponse.json({ kind: 'internal', shipment: resolveShipment(shipment) });
+    if (shipment) return NextResponse.json({ kind: 'internal', shipment: resolveShipment(shipment) });
+    const workspace = await indexedWorkspaceShipment(normalizeTrackingNumber(raw));
+    if (!workspace) return NextResponse.json({ error: 'No stored shipment matches that number.' }, { status: 404 });
+    return NextResponse.json({ kind: 'workspace', shipment: resolveShipment(workspace) });
   } catch (error) {
     console.error('[tracking] lookup failed', error);
     return NextResponse.json({ error: 'Lookup failed.' }, { status: 500 });
