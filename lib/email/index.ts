@@ -223,7 +223,7 @@ export interface SendResult {
  * A text alternative goes alongside the HTML: some clients prefer it, spam
  * filters expect it, and it is free — we authored the plain text first.
  */
-async function deliver(to: string, email: RenderedEmail): Promise<SendResult> {
+export async function deliverEmail(to: string, email: RenderedEmail): Promise<SendResult> {
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const from = emailFrom();
   if (!apiKey || !from) return { ok: false, error: emailConfigError() ?? 'Email is not configured.' };
@@ -301,7 +301,7 @@ export async function sendShipmentEmail(input: {
   if (!template) return { ok: false, error: 'Unknown template.' };
 
   const rendered = renderTemplate(template, shipmentVariables(input.shipment, input.recipientName));
-  const result = await deliver(input.to, rendered);
+  const result = await deliverEmail(input.to, rendered);
 
   const db = adminDb();
   if (db) {
